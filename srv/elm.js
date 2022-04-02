@@ -519,11 +519,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.L.B === region.Q.B)
+	if (region.M.A === region.R.A)
 	{
-		return 'on line ' + region.L.B;
+		return 'on line ' + region.M.A;
 	}
-	return 'on lines ' + region.L.B + ' through ' + region.Q.B;
+	return 'on lines ' + region.M.A + ' through ' + region.R.A;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aF,
-		impl.aQ,
-		impl.aO,
+		impl.aG,
+		impl.aR,
+		impl.aP,
 		function() { return function() {} }
 	);
 });
@@ -2705,8 +2705,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		o: func(record.o),
-		M: record.M,
-		J: record.J
+		N: record.N,
+		K: record.K
 	}
 });
 
@@ -2975,10 +2975,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.o;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.M;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.N;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.J) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.K) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3928,11 +3928,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aF,
-		impl.aQ,
-		impl.aO,
+		impl.aG,
+		impl.aR,
+		impl.aP,
 		function(sendToApp, initialModel) {
-			var view = impl.aR;
+			var view = impl.aS;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3964,12 +3964,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aF,
-		impl.aQ,
-		impl.aO,
+		impl.aG,
+		impl.aR,
+		impl.aP,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.K && impl.K(sendToApp)
-			var view = impl.aR;
+			var divertHrefToApp = impl.L && impl.L(sendToApp)
+			var view = impl.aS;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3977,12 +3977,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.au);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.av);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aP) && (_VirtualDom_doc.title = title = doc.aP);
+				(title !== doc.aQ) && (_VirtualDom_doc.title = title = doc.aQ);
 			});
 		}
 	);
@@ -4038,12 +4038,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aI;
-	var onUrlRequest = impl.aJ;
+	var onUrlChange = impl.aJ;
+	var onUrlRequest = impl.aK;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		K: function(sendToApp)
+		L: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4059,9 +4059,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.ac === next.ac
-							&& curr.U === next.U
-							&& curr._.a === next._.a
+							&& curr.ad === next.ad
+							&& curr.V === next.V
+							&& curr.aa.a === next.aa.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4069,13 +4069,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aF: function(flags)
+		aG: function(flags)
 		{
-			return A3(impl.aF, flags, _Browser_getUrl(), key);
+			return A3(impl.aG, flags, _Browser_getUrl(), key);
 		},
+		aS: impl.aS,
 		aR: impl.aR,
-		aQ: impl.aQ,
-		aO: impl.aO
+		aP: impl.aP
 	});
 }
 
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aD: 'hidden', av: 'visibilitychange' }
+		? { aE: 'hidden', aw: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aD: 'mozHidden', av: 'mozvisibilitychange' }
+		? { aE: 'mozHidden', aw: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aD: 'msHidden', av: 'msvisibilitychange' }
+		? { aE: 'msHidden', aw: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aD: 'webkitHidden', av: 'webkitvisibilitychange' }
-		: { aD: 'hidden', av: 'visibilitychange' };
+		? { aE: 'webkitHidden', aw: 'webkitvisibilitychange' }
+		: { aE: 'hidden', aw: 'visibilitychange' };
 }
 
 
@@ -4232,12 +4232,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ah: _Browser_getScene(),
-		ak: {
-			am: _Browser_window.pageXOffset,
-			an: _Browser_window.pageYOffset,
-			al: _Browser_doc.documentElement.clientWidth,
-			T: _Browser_doc.documentElement.clientHeight
+		ai: _Browser_getScene(),
+		al: {
+			an: _Browser_window.pageXOffset,
+			ao: _Browser_window.pageYOffset,
+			am: _Browser_doc.documentElement.clientWidth,
+			U: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4247,8 +4247,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		al: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		T: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		am: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		U: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4271,15 +4271,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ah: {
-				al: node.scrollWidth,
-				T: node.scrollHeight
+			ai: {
+				am: node.scrollWidth,
+				U: node.scrollHeight
 			},
-			ak: {
-				am: node.scrollLeft,
-				an: node.scrollTop,
-				al: node.clientWidth,
-				T: node.clientHeight
+			al: {
+				an: node.scrollLeft,
+				ao: node.scrollTop,
+				am: node.clientWidth,
+				U: node.clientHeight
 			}
 		};
 	});
@@ -4309,18 +4309,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ah: _Browser_getScene(),
-			ak: {
-				am: x,
-				an: y,
-				al: _Browser_doc.documentElement.clientWidth,
-				T: _Browser_doc.documentElement.clientHeight
+			ai: _Browser_getScene(),
+			al: {
+				an: x,
+				ao: y,
+				am: _Browser_doc.documentElement.clientWidth,
+				U: _Browser_doc.documentElement.clientHeight
 			},
-			ax: {
-				am: x + rect.left,
-				an: y + rect.top,
-				al: rect.width,
-				T: rect.height
+			ay: {
+				an: x + rect.left,
+				ao: y + rect.top,
+				am: rect.width,
+				U: rect.height
 			}
 		};
 	});
@@ -4437,18 +4437,23 @@ var $elm$core$Basics$GT = 2;
 var $elm$core$Basics$LT = 0;
 var $author$project$Main$Model = F2(
 	function (newCase, cases) {
-		return {G: cases, w: newCase};
+		return {F: cases, w: newCase};
 	});
 var $elm$core$Basics$False = 1;
-var $author$project$NewCaseForm$Model = F3(
-	function (formOpen, formData, saveNewCase) {
-		return {aA: formData, A: formOpen, ag: saveNewCase};
+var $author$project$NewCaseForm$Model = F4(
+	function (formOpen, formData, invalidFields, save) {
+		return {aB: formData, G: formOpen, H: invalidFields, ah: save};
 	});
 var $elm$core$Maybe$Nothing = {$: 1};
 var $author$project$Case$Verteidiger = 0;
 var $author$project$Case$defaultArt = 0;
-var $author$project$NewCaseForm$defaultFormData = {aq: $author$project$Case$defaultArt, ar: '', as: '', at: '', ay: '', aB: '', aC: '', aM: '', aN: 'laufend'};
-var $author$project$NewCaseForm$defaults = A3($author$project$NewCaseForm$Model, false, $author$project$NewCaseForm$defaultFormData, $elm$core$Maybe$Nothing);
+var $author$project$NewCaseForm$defaultFormData = {ar: $author$project$Case$defaultArt, as: '', at: '', au: '', az: '', aC: '', aD: '', aN: '', aO: 'laufend'};
+var $author$project$NewCaseForm$InvalidFields = F3(
+	function (rubrum, beginn, stand) {
+		return {at: beginn, aN: rubrum, aO: stand};
+	});
+var $author$project$NewCaseForm$defaultInvalidFields = A3($author$project$NewCaseForm$InvalidFields, false, false, false);
+var $author$project$NewCaseForm$defaults = A4($author$project$NewCaseForm$Model, false, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields, $elm$core$Maybe$Nothing);
 var $author$project$Main$init = A2($author$project$Main$Model, $author$project$NewCaseForm$defaults, _List_Nil);
 var $elm$core$Result$Err = function (a) {
 	return {$: 1, a: a};
@@ -4872,7 +4877,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {S: fragment, U: host, Y: path, _: port_, ac: protocol, ad: query};
+		return {T: fragment, V: host, Z: path, aa: port_, ad: protocol, ae: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5157,20 +5162,25 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$sandbox = function (impl) {
 	return _Browser_element(
 		{
-			aF: function (_v0) {
-				return _Utils_Tuple2(impl.aF, $elm$core$Platform$Cmd$none);
+			aG: function (_v0) {
+				return _Utils_Tuple2(impl.aG, $elm$core$Platform$Cmd$none);
 			},
-			aO: function (_v1) {
+			aP: function (_v1) {
 				return $elm$core$Platform$Sub$none;
 			},
-			aQ: F2(
+			aR: F2(
 				function (msg, model) {
 					return _Utils_Tuple2(
-						A2(impl.aQ, msg, model),
+						A2(impl.aR, msg, model),
 						$elm$core$Platform$Cmd$none);
 				}),
-			aR: impl.aR
+			aS: impl.aS
 		});
+};
+var $author$project$NewCaseForm$closeAndReset = function (model) {
+	return _Utils_update(
+		model,
+		{aB: $author$project$NewCaseForm$defaultFormData, G: false, H: $author$project$NewCaseForm$defaultInvalidFields});
 };
 var $author$project$Case$Model = function (number) {
 	return function (rubrum) {
@@ -5182,7 +5192,7 @@ var $author$project$Case$Model = function (number) {
 							return function (art) {
 								return function (beschreibung) {
 									return function (stand) {
-										return {aq: art, ar: az, as: beginn, at: beschreibung, ay: ende, aB: gegenstand, aC: gericht, aH: number, aM: rubrum, aN: stand};
+										return {ar: art, as: az, at: beginn, au: beschreibung, az: ende, aC: gegenstand, aD: gericht, aI: number, aN: rubrum, aO: stand};
 									};
 								};
 							};
@@ -5193,16 +5203,28 @@ var $author$project$Case$Model = function (number) {
 		};
 	};
 };
-var $author$project$NewCaseForm$save = function (model) {
-	var f = model.aA;
-	var c = $author$project$Case$Model(42)(f.aM)(f.ar)(f.aC)(f.as)(f.ay)(f.aB)(f.aq)(f.at)(f.aN);
-	return _Utils_update(
-		model,
-		{
-			aA: $author$project$NewCaseForm$defaultFormData,
-			A: false,
-			ag: $elm$core$Maybe$Just(c)
-		});
+var $author$project$NewCaseForm$formIsInvalid = function (i) {
+	return i.aN || (i.at || i.aO);
+};
+var $author$project$NewCaseForm$formValidate = function (f) {
+	return A3($author$project$NewCaseForm$InvalidFields, f.aN === '', f.at === '', f.aO === '');
+};
+var $author$project$NewCaseForm$saveAndReset = function (model) {
+	var f = model.aB;
+	var v = $author$project$NewCaseForm$formValidate(f);
+	if ($author$project$NewCaseForm$formIsInvalid(v)) {
+		return _Utils_update(
+			model,
+			{H: v});
+	} else {
+		var c = $author$project$Case$Model(42)(f.aN)(f.as)(f.aD)(f.at)(f.az)(f.aC)(f.ar)(f.au)(f.aO);
+		return $author$project$NewCaseForm$closeAndReset(
+			_Utils_update(
+				model,
+				{
+					ah: $elm$core$Maybe$Just(c)
+				}));
+	}
 };
 var $author$project$NewCaseForm$updateFormData = F2(
 	function (msg, formData) {
@@ -5211,47 +5233,47 @@ var $author$project$NewCaseForm$updateFormData = F2(
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aM: v});
+					{aN: v});
 			case 1:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{ar: v});
+					{as: v});
 			case 2:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aC: v});
+					{aD: v});
 			case 3:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{as: v});
+					{at: v});
 			case 4:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{ay: v});
+					{az: v});
 			case 5:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aB: v});
+					{aC: v});
 			case 6:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aq: v});
+					{ar: v});
 			case 7:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{at: v});
+					{au: v});
 			default:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aN: v});
+					{aO: v});
 		}
 	});
 var $author$project$NewCaseForm$update = F2(
@@ -5262,21 +5284,19 @@ var $author$project$NewCaseForm$update = F2(
 				if (!m) {
 					return _Utils_update(
 						model,
-						{A: true});
+						{G: true});
 				} else {
-					return _Utils_update(
-						model,
-						{aA: $author$project$NewCaseForm$defaultFormData, A: false});
+					return $author$project$NewCaseForm$closeAndReset(model);
 				}
 			case 1:
-				return $author$project$NewCaseForm$save(model);
-			default:
 				var m = msg.a;
 				return _Utils_update(
 					model,
 					{
-						aA: A2($author$project$NewCaseForm$updateFormData, m, model.aA)
+						aB: A2($author$project$NewCaseForm$updateFormData, m, model.aB)
 					});
+			default:
+				return $author$project$NewCaseForm$saveAndReset(model);
 		}
 	});
 var $author$project$Main$update = F2(
@@ -5284,7 +5304,7 @@ var $author$project$Main$update = F2(
 		if (!msg.$) {
 			var innerMsg = msg.a;
 			var innerModel = A2($author$project$NewCaseForm$update, innerMsg, model.w);
-			var _v1 = innerModel.ag;
+			var _v1 = innerModel.ah;
 			if (_v1.$ === 1) {
 				return _Utils_update(
 					model,
@@ -5293,12 +5313,12 @@ var $author$project$Main$update = F2(
 				var c = _v1.a;
 				var updatedInnerModel = _Utils_update(
 					innerModel,
-					{ag: $elm$core$Maybe$Nothing});
+					{ah: $elm$core$Maybe$Nothing});
 				return _Utils_update(
 					model,
 					{
-						G: _Utils_ap(
-							model.G,
+						F: _Utils_ap(
+							model.F,
 							_List_fromArray(
 								[c])),
 						w: updatedInnerModel
@@ -5362,28 +5382,7 @@ var $author$project$Main$caseRow = function (c) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						$elm$core$String$fromInt(c.aH))
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aM)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.as)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.ay)
+						$elm$core$String$fromInt(c.aI))
 					])),
 				A2(
 				$elm$html$Html$td,
@@ -5391,6 +5390,27 @@ var $author$project$Main$caseRow = function (c) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(c.aN)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.at)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.az)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.aO)
 					])),
 				A2(
 				$elm$html$Html$td,
@@ -5529,7 +5549,7 @@ var $author$project$Main$caseListView = function (model) {
 						A2(
 						$elm$html$Html$tbody,
 						_List_Nil,
-						A2($elm$core$List$map, $author$project$Main$caseRow, model.G))
+						A2($elm$core$List$map, $author$project$Main$caseRow, model.F))
 					]))
 			]));
 };
@@ -5565,10 +5585,10 @@ var $author$project$NewCaseForm$viewButton = A2(
 			$elm$html$Html$text('Neuer Fall')
 		]));
 var $author$project$NewCaseForm$CloseAndReset = 1;
-var $author$project$NewCaseForm$FormDataInput = function (a) {
-	return {$: 2, a: a};
+var $author$project$NewCaseForm$FormDataMsg = function (a) {
+	return {$: 1, a: a};
 };
-var $author$project$NewCaseForm$SaveNewCase = {$: 1};
+var $author$project$NewCaseForm$SaveAndReset = {$: 2};
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $author$project$NewCaseForm$formButtons = function (cancelMsg) {
 	return A2(
@@ -5761,8 +5781,8 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
-var $author$project$NewCaseForm$inputField = F5(
-	function (t, l, h, toMsg, v) {
+var $author$project$NewCaseForm$inputField = F6(
+	function (t, l, h, i, toMsg, v) {
 		var idPrefix = 'NewCaseForm' + l;
 		var _v0 = (t === 'textarea') ? _Utils_Tuple2(
 			$elm$html$Html$textarea,
@@ -5773,7 +5793,12 @@ var $author$project$NewCaseForm$inputField = F5(
 			$elm$html$Html$input,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$type_(t)
+					$elm$html$Html$Attributes$type_(t),
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('is-invalid', i)
+						]))
 				]));
 		var tag = _v0.a;
 		var attrs = _v0.b;
@@ -5824,67 +5849,71 @@ var $author$project$NewCaseForm$inputField = F5(
 				]));
 	});
 var $author$project$NewCaseForm$az = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'text', 'Kanzleiaktenzeichen und Initialen', 'Beispiel: 000234/2022 M.M.', $author$project$NewCaseForm$Az, a);
+	return A6($author$project$NewCaseForm$inputField, 'text', 'Kanzleiaktenzeichen und Initialen', 'Beispiel: 000234/2022 M.M.', false, $author$project$NewCaseForm$Az, a);
 };
 var $author$project$NewCaseForm$Beginn = function (a) {
 	return {$: 3, a: a};
 };
-var $author$project$NewCaseForm$beginn = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'date', 'Beginn', '', $author$project$NewCaseForm$Beginn, a);
-};
+var $author$project$NewCaseForm$beginn = F2(
+	function (a, i) {
+		return A6($author$project$NewCaseForm$inputField, 'date', 'Beginn', 'Erforderliche Angabe.', i, $author$project$NewCaseForm$Beginn, a);
+	});
 var $author$project$NewCaseForm$Beschreibung = function (a) {
 	return {$: 7, a: a};
 };
 var $author$project$NewCaseForm$beschreibung = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'textarea', 'Beschreibung der Tätigkeit/Aufteilung der Verfahrensabschnitte/Umfang des Verfahrens', 'Beispiele: Ermittlungsverfahren/Zwischenverfahren/Hauptverfahren; Haftprüfungsantrag, Haftbeschwerde, Beweisanträge, prozessuale Besonderheiten und prozessuale Reaktion hierauf, Verfahrensabsprache u.a.; außergewöhnlicher Aktenumfang, Haftbesuche, Gespräche mit Staatsanwaltschaft u.a', $author$project$NewCaseForm$Beschreibung, a);
+	return A6($author$project$NewCaseForm$inputField, 'textarea', 'Beschreibung der Tätigkeit/Aufteilung der Verfahrensabschnitte/Umfang des Verfahrens', 'Beispiele: Ermittlungsverfahren/Zwischenverfahren/Hauptverfahren; Haftprüfungsantrag, Haftbeschwerde, Beweisanträge, prozessuale Besonderheiten und prozessuale Reaktion hierauf, Verfahrensabsprache u.a.; außergewöhnlicher Aktenumfang, Haftbesuche, Gespräche mit Staatsanwaltschaft u.a', false, $author$project$NewCaseForm$Beschreibung, a);
 };
 var $author$project$NewCaseForm$Ende = function (a) {
 	return {$: 4, a: a};
 };
 var $author$project$NewCaseForm$ende = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'text', 'Ende', 'Datum der Rechtskraft/Mandatsbeendigung oder „noch anhängig“', $author$project$NewCaseForm$Ende, a);
+	return A6($author$project$NewCaseForm$inputField, 'text', 'Ende', 'Datum der Rechtskraft/Mandatsbeendigung oder „noch anhängig“', false, $author$project$NewCaseForm$Ende, a);
 };
 var $author$project$NewCaseForm$Gegenstand = function (a) {
 	return {$: 5, a: a};
 };
 var $author$project$NewCaseForm$gegenstand = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'textarea', 'Gegenstand', 'Straftatvorwurf und kurzer Abriss des Lebenssachverhalts in zwei bis drei Sätzen', $author$project$NewCaseForm$Gegenstand, a);
+	return A6($author$project$NewCaseForm$inputField, 'textarea', 'Gegenstand', 'Straftatvorwurf und kurzer Abriss des Lebenssachverhalts in zwei bis drei Sätzen', false, $author$project$NewCaseForm$Gegenstand, a);
 };
 var $author$project$NewCaseForm$Gericht = function (a) {
 	return {$: 2, a: a};
 };
 var $author$project$NewCaseForm$gericht = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'text', 'Gericht/Behörde und Aktenzeichen', 'Beispiel: AG Leipzig 123 Cs 456 Js 7890/2022; LG Leipzig ...', $author$project$NewCaseForm$Gericht, a);
+	return A6($author$project$NewCaseForm$inputField, 'text', 'Gericht/Behörde und Aktenzeichen', 'Beispiel: AG Leipzig 123 Cs 456 Js 7890/2022; LG Leipzig ...', false, $author$project$NewCaseForm$Gericht, a);
 };
 var $author$project$NewCaseForm$Rubrum = function (a) {
 	return {$: 0, a: a};
 };
-var $author$project$NewCaseForm$rubrum = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'text', 'Rubrum', 'Beispiel: Müller, M. u. a. wegen Steuerhinterziehung. Dieses Feld wird am Ende der Kammer nicht mitgeteilt.', $author$project$NewCaseForm$Rubrum, a);
-};
+var $author$project$NewCaseForm$rubrum = F2(
+	function (a, i) {
+		return A6($author$project$NewCaseForm$inputField, 'text', 'Rubrum', 'Erforderliche Angabe. Beispiel: Müller, M. u. a. wegen Steuerhinterziehung. Dieses Feld wird am Ende der Kammer nicht mitgeteilt.', i, $author$project$NewCaseForm$Rubrum, a);
+	});
 var $author$project$NewCaseForm$Stand = function (a) {
 	return {$: 8, a: a};
 };
-var $author$project$NewCaseForm$stand = function (a) {
-	return A5($author$project$NewCaseForm$inputField, 'text', 'Stand des Verfahrens', 'Beispiele: laufend oder abgeschlossen, ggf. Datum der Rechtskraft von Urteilen', $author$project$NewCaseForm$Stand, a);
-};
-var $author$project$NewCaseForm$formfields = function (formData) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$author$project$NewCaseForm$rubrum(formData.aM),
-				$author$project$NewCaseForm$az(formData.ar),
-				$author$project$NewCaseForm$gericht(formData.aC),
-				$author$project$NewCaseForm$beginn(formData.as),
-				$author$project$NewCaseForm$ende(formData.ay),
-				$author$project$NewCaseForm$gegenstand(formData.aB),
-				$author$project$NewCaseForm$art(formData.aq),
-				$author$project$NewCaseForm$beschreibung(formData.at),
-				$author$project$NewCaseForm$stand(formData.aN)
-			]));
-};
+var $author$project$NewCaseForm$stand = F2(
+	function (a, i) {
+		return A6($author$project$NewCaseForm$inputField, 'text', 'Stand des Verfahrens', 'Erforderliche Angabe. Beispiele: laufend oder abgeschlossen, ggf. Datum der Rechtskraft von Urteilen', i, $author$project$NewCaseForm$Stand, a);
+	});
+var $author$project$NewCaseForm$formfields = F2(
+	function (formData, invalidFields) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2($author$project$NewCaseForm$rubrum, formData.aN, invalidFields.aN),
+					$author$project$NewCaseForm$az(formData.as),
+					$author$project$NewCaseForm$gericht(formData.aD),
+					A2($author$project$NewCaseForm$beginn, formData.at, invalidFields.at),
+					$author$project$NewCaseForm$ende(formData.az),
+					$author$project$NewCaseForm$gegenstand(formData.aC),
+					$author$project$NewCaseForm$art(formData.ar),
+					$author$project$NewCaseForm$beschreibung(formData.au),
+					A2($author$project$NewCaseForm$stand, formData.aO, invalidFields.aO)
+				]));
+	});
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$Events$alwaysPreventDefault = function (msg) {
 	return _Utils_Tuple2(msg, true);
@@ -5908,39 +5937,40 @@ var $elm$html$Html$Events$onSubmit = function (msg) {
 			$elm$html$Html$Events$alwaysPreventDefault,
 			$elm$json$Json$Decode$succeed(msg)));
 };
-var $author$project$NewCaseForm$viewForm = function (formData) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$form,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onSubmit($author$project$NewCaseForm$SaveNewCase),
-						$elm$html$Html$Attributes$class('mb-5')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$map,
-						$author$project$NewCaseForm$FormDataInput,
-						$author$project$NewCaseForm$formfields(formData)),
-						$author$project$NewCaseForm$formButtons(
-						$author$project$NewCaseForm$Form(1))
-					])),
-				A2(
-				$elm$html$Html$hr,
-				_List_fromArray(
-					[
-						$author$project$Shared$classes('col-4 mb-5')
-					]),
-				_List_Nil)
-			]));
-};
+var $author$project$NewCaseForm$viewForm = F2(
+	function (formData, invalidFields) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$form,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onSubmit($author$project$NewCaseForm$SaveAndReset),
+							$elm$html$Html$Attributes$class('mb-5')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$map,
+							$author$project$NewCaseForm$FormDataMsg,
+							A2($author$project$NewCaseForm$formfields, formData, invalidFields)),
+							$author$project$NewCaseForm$formButtons(
+							$author$project$NewCaseForm$Form(1))
+						])),
+					A2(
+					$elm$html$Html$hr,
+					_List_fromArray(
+						[
+							$author$project$Shared$classes('col-4 mb-5')
+						]),
+					_List_Nil)
+				]));
+	});
 var $author$project$NewCaseForm$view = function (model) {
-	return model.A ? $author$project$NewCaseForm$viewForm(model.aA) : $author$project$NewCaseForm$viewButton;
+	return model.G ? A2($author$project$NewCaseForm$viewForm, model.aB, model.H) : $author$project$NewCaseForm$viewButton;
 };
 var $author$project$Main$view = function (model) {
 	return A2(
@@ -5976,7 +6006,7 @@ var $author$project$Main$view = function (model) {
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Fachanwalt für Strafrecht' + model.w.aA.aM)
+										$elm$html$Html$text('Fachanwalt für Strafrecht' + model.w.aB.aN)
 									]))
 							]))
 					])),
@@ -6004,6 +6034,6 @@ var $author$project$Main$view = function (model) {
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
-	{aF: $author$project$Main$init, aQ: $author$project$Main$update, aR: $author$project$Main$view});
+	{aG: $author$project$Main$init, aR: $author$project$Main$update, aS: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(0))(0)}});}(this));

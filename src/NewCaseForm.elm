@@ -2,7 +2,7 @@ module NewCaseForm exposing (Model, Msg, defaults, update, view, viewButton)
 
 import Case
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, for, id, placeholder, rows, selected, type_, value)
+import Html.Attributes exposing (attribute, class, classList, for, id, placeholder, rows, selected, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Shared exposing (classes)
 
@@ -11,9 +11,19 @@ import Shared exposing (classes)
 -- MODEL
 
 
+{-| Model controls the form to create a new case.
+
+    formOpen :      Becomes True when the user clicks on the button to open a new (empty) form.
+    formData :      Contains data from all form fields.
+    invalidFields : Holds booleans for all fields that have been filled with
+                    invalid data (i. e. fields that must not be empty).
+    save :          Contains a newly created case after the user clicked the Save button.
+
+-}
 type alias Model =
     { formOpen : Bool
     , formData : FormData
+    , invalidFields : InvalidFields
     , save : Maybe Case.Model
     }
 
@@ -31,11 +41,21 @@ type alias FormData =
     }
 
 
+{-| Only these fields can be invalid.
+-}
+type alias InvalidFields =
+    { rubrum : Bool
+    , beginn : Bool
+    , stand : Bool
+    }
+
+
 defaults : Model
 defaults =
     Model
         False
         defaultFormData
+        defaultInvalidFields
         Nothing
 
 
@@ -53,6 +73,11 @@ defaultFormData =
     }
 
 
+defaultInvalidFields : InvalidFields
+defaultInvalidFields =
+    InvalidFields False False False
+
+
 
 -- UPDATE
 
@@ -63,6 +88,8 @@ type Msg
     | SaveAndReset
 
 
+{-| Handles opening the form and closing the form without saving any data.
+-}
 type FormStatus
     = Open
     | CloseAndReset
@@ -89,7 +116,7 @@ update msg model =
                     { model | formOpen = True }
 
                 CloseAndReset ->
-                    { model | formOpen = False, formData = defaultFormData }
+                    closeAndReset model
 
         FormDataMsg m ->
             { model | formData = updateFormData m model.formData }
@@ -129,6 +156,10 @@ updateFormData msg formData =
             { formData | stand = v }
 
 
+{-| If the form is invalid we just fill the invalidFields property. If the vorm
+is valid we create the new Case, put it into the save property and reset and
+close the form to be ready for the next call.
+-}
 saveAndReset : Model -> Model
 saveAndReset model =
     let
@@ -136,31 +167,64 @@ saveAndReset model =
         f =
             model.formData
 
-        c : Case.Model
-        c =
-            Case.Model
-                42
-                f.rubrum
-                f.az
-                f.gericht
-                f.beginn
-                f.ende
-                f.gegenstand
-                f.art
-                f.beschreibung
-                f.stand
+        v : InvalidFields
+        v =
+            formValidate f
     in
-    { model | save = Just c, formOpen = False, formData = defaultFormData }
+    if formIsInvalid v then
+        { model | invalidFields = v }
+
+    else
+        let
+            c : Case.Model
+            c =
+                Case.Model
+                    42
+                    f.rubrum
+                    f.az
+                    f.gericht
+                    f.beginn
+                    f.ende
+                    f.gegenstand
+                    f.art
+                    f.beschreibung
+                    f.stand
+        in
+        closeAndReset { model | save = Just c }
+
+
+formValidate : FormData -> InvalidFields
+formValidate f =
+    InvalidFields
+        (f.rubrum == "")
+        (f.beginn == "")
+        (f.stand == "")
+
+
+formIsInvalid : InvalidFields -> Bool
+formIsInvalid i =
+    i.rubrum || i.beginn || i.stand
+
+
+closeAndReset : Model -> Model
+closeAndReset model =
+    { model
+        | formOpen = False
+        , formData = defaultFormData
+        , invalidFields = defaultInvalidFields
+    }
 
 
 
 -- VIEW
 
 
+{-| Show the form or only a button so the user can click and open.
+-}
 view : Model -> Html Msg
 view model =
     if model.formOpen then
-        viewForm model.formData
+        viewForm model.formData model.invalidFields
 
     else
         viewButton
@@ -172,30 +236,30 @@ viewButton =
         [ text "Neuer Fall" ]
 
 
-viewForm : FormData -> Html Msg
-viewForm formData =
+viewForm : FormData -> InvalidFields -> Html Msg
+viewForm formData invalidFields =
     div []
         [ form
             [ onSubmit SaveAndReset, class "mb-5" ]
-            [ formfields formData |> map FormDataMsg
+            [ formfields formData invalidFields |> map FormDataMsg
             , formButtons <| Form CloseAndReset
             ]
         , hr [ classes "col-4 mb-5" ] []
         ]
 
 
-formfields : FormData -> Html FormDataInput
-formfields formData =
+formfields : FormData -> InvalidFields -> Html FormDataInput
+formfields formData invalidFields =
     div []
-        [ rubrum formData.rubrum
+        [ rubrum formData.rubrum invalidFields.rubrum
         , az formData.az
         , gericht formData.gericht
-        , beginn formData.beginn
+        , beginn formData.beginn invalidFields.beginn
         , ende formData.ende
         , gegenstand formData.gegenstand
         , art formData.art
         , beschreibung formData.beschreibung
-        , stand formData.stand
+        , stand formData.stand invalidFields.stand
         ]
 
 
@@ -210,12 +274,17 @@ formButtons cancelMsg =
         ]
 
 
-rubrum : Value -> Html FormDataInput
-rubrum a =
+
+-- All form Fields with helper methods
+
+
+rubrum : Value -> IsInvalid -> Html FormDataInput
+rubrum a i =
     inputField
         "text"
         "Rubrum"
-        "Beispiel: Müller, M. u. a. wegen Steuerhinterziehung. Dieses Feld wird am Ende der Kammer nicht mitgeteilt."
+        "Erforderliche Angabe. Beispiel: Müller, M. u. a. wegen Steuerhinterziehung. Dieses Feld wird am Ende der Kammer nicht mitgeteilt."
+        i
         Rubrum
         a
 
@@ -225,6 +294,7 @@ az a =
     inputField "text"
         "Kanzleiaktenzeichen und Initialen"
         "Beispiel: 000234/2022 M.M."
+        False
         Az
         a
 
@@ -234,15 +304,17 @@ gericht a =
     inputField "text"
         "Gericht/Behörde und Aktenzeichen"
         "Beispiel: AG Leipzig 123 Cs 456 Js 7890/2022; LG Leipzig ..."
+        False
         Gericht
         a
 
 
-beginn : Value -> Html FormDataInput
-beginn a =
+beginn : Value -> IsInvalid -> Html FormDataInput
+beginn a i =
     inputField "date"
         "Beginn"
-        ""
+        "Erforderliche Angabe."
+        i
         Beginn
         a
 
@@ -252,6 +324,7 @@ ende a =
     inputField "text"
         "Ende"
         "Datum der Rechtskraft/Mandatsbeendigung oder „noch anhängig“"
+        False
         Ende
         a
 
@@ -261,6 +334,7 @@ gegenstand a =
     inputField "textarea"
         "Gegenstand"
         "Straftatvorwurf und kurzer Abriss des Lebenssachverhalts in zwei bis drei Sätzen"
+        False
         Gegenstand
         a
 
@@ -302,32 +376,41 @@ beschreibung a =
     inputField "textarea"
         "Beschreibung der Tätigkeit/Aufteilung der Verfahrensabschnitte/Umfang des Verfahrens"
         "Beispiele: Ermittlungsverfahren/Zwischenverfahren/Hauptverfahren; Haftprüfungsantrag, Haftbeschwerde, Beweisanträge, prozessuale Besonderheiten und prozessuale Reaktion hierauf, Verfahrensabsprache u.a.; außergewöhnlicher Aktenumfang, Haftbesuche, Gespräche mit Staatsanwaltschaft u.a"
+        False
         Beschreibung
         a
 
 
-stand : Value -> Html FormDataInput
-stand a =
+stand : Value -> IsInvalid -> Html FormDataInput
+stand a i =
     inputField "text"
         "Stand des Verfahrens"
-        "Beispiele: laufend oder abgeschlossen, ggf. Datum der Rechtskraft von Urteilen"
+        "Erforderliche Angabe. Beispiele: laufend oder abgeschlossen, ggf. Datum der Rechtskraft von Urteilen"
+        i
         Stand
         a
 
 
 
 -- TODO
--- - Daten der Hauptverhandlungstage (auch vor Straf- bzw. Bußgeldrichter) mit
--- Zuordnung zu dem erkennenden Gericht
+-- - Daten der Hauptverhandlungstage (auch vor Straf- bzw. Bußgeldrichter) mit Zuordnung zu dem erkennenden Gericht
 -- TODO: Id might be invalid, transform it
 -- HTML4: ID and NAME tokens must begin with a letter ([A-Za-z]) and may be followed by any number of letters, digits ([0-9]), hyphens ("-"), underscores ("_"), colons (":"), and periods (".").
 -- HTML5: ...???
 
 
-{-| Creates a Bootstrap form control div with label, input or textarea and help text.
+{-| Creates a Bootstrap form control div with label, input or textarea and help
+text. This is a helper for almost all form fields.
 -}
-inputField : InputFieldType -> Label -> HelpText -> (String -> FormDataInput) -> Value -> Html FormDataInput
-inputField t l h toMsg v =
+inputField :
+    InputFieldType
+    -> Label
+    -> HelpText
+    -> IsInvalid
+    -> FormDataInputVariant
+    -> Value
+    -> Html FormDataInput
+inputField t l h i toMsg v =
     let
         idPrefix : String
         idPrefix =
@@ -338,7 +421,7 @@ inputField t l h toMsg v =
                 ( textarea, [ rows 5 ] )
 
             else
-                ( input, [ type_ t ] )
+                ( input, [ type_ t, classList [ ( "is-invalid", i ) ] ] )
     in
     div [ class "mb-3" ]
         [ label [ for (idPrefix ++ "Input"), class "form-label" ]
@@ -369,6 +452,14 @@ type alias Label =
 
 type alias HelpText =
     String
+
+
+type alias IsInvalid =
+    Bool
+
+
+type alias FormDataInputVariant =
+    String -> FormDataInput
 
 
 type alias Value =
