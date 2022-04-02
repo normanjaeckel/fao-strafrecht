@@ -1,5 +1,6 @@
 module NewCaseForm exposing (Model, Msg, defaults, update, view, viewButton)
 
+import Case
 import Html exposing (..)
 import Html.Attributes exposing (attribute, class, for, id, placeholder, rows, selected, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -13,6 +14,7 @@ import Shared exposing (classes)
 type alias Model =
     { formOpen : Bool
     , formData : FormData
+    , save : Maybe Case.Model
     }
 
 
@@ -23,7 +25,7 @@ type alias FormData =
     , beginn : String
     , ende : String
     , gegenstand : String
-    , art : Art
+    , art : Case.Art
     , beschreibung : String
     , stand : String
     }
@@ -34,6 +36,7 @@ defaults =
     Model
         False
         defaultFormData
+        Nothing
 
 
 defaultFormData : FormData
@@ -44,46 +47,10 @@ defaultFormData =
     , beginn = ""
     , ende = ""
     , gegenstand = ""
-    , art = Verteidiger
+    , art = Case.defaultArt
     , beschreibung = ""
     , stand = "laufend"
     }
-
-
-type Art
-    = Verteidiger
-    | Nebenklaeger
-    | Zeugenbeistand
-
-
-{-| Converts the custom model type to human readable string.
--}
-artToString : Art -> String
-artToString a =
-    case a of
-        Verteidiger ->
-            "Verteidiger"
-
-        Nebenklaeger ->
-            "Nebenkläger"
-
-        Zeugenbeistand ->
-            "Zeugenbeistand"
-
-
-stringToArt : String -> Art
-stringToArt s =
-    if s == "Verteidiger" then
-        Verteidiger
-
-    else if s == "Nebenklaeger" then
-        Nebenklaeger
-
-    else if s == "Zeugenbeistand" then
-        Zeugenbeistand
-
-    else
-        defaultFormData.art
 
 
 
@@ -91,12 +58,12 @@ stringToArt s =
 
 
 type Msg
-    = Form Form
-    | SaveNewCase
-    | FormDataInput FormDataInput
+    = Form FormStatus
+    | FormDataMsg FormDataInput
+    | SaveAndReset
 
 
-type Form
+type FormStatus
     = Open
     | CloseAndReset
 
@@ -108,7 +75,7 @@ type FormDataInput
     | Beginn String
     | Ende String
     | Gegenstand String
-    | ArtMsg Art
+    | ArtMsg Case.Art
     | Beschreibung String
     | Stand String
 
@@ -124,12 +91,11 @@ update msg model =
                 CloseAndReset ->
                     { model | formOpen = False, formData = defaultFormData }
 
-        SaveNewCase ->
-            -- TODO: This case is still open.
-            model
-
-        FormDataInput m ->
+        FormDataMsg m ->
             { model | formData = updateFormData m model.formData }
+
+        SaveAndReset ->
+            saveAndReset model
 
 
 updateFormData : FormDataInput -> FormData -> FormData
@@ -163,6 +129,30 @@ updateFormData msg formData =
             { formData | stand = v }
 
 
+saveAndReset : Model -> Model
+saveAndReset model =
+    let
+        f : FormData
+        f =
+            model.formData
+
+        c : Case.Model
+        c =
+            Case.Model
+                42
+                f.rubrum
+                f.az
+                f.gericht
+                f.beginn
+                f.ende
+                f.gegenstand
+                f.art
+                f.beschreibung
+                f.stand
+    in
+    { model | save = Just c, formOpen = False, formData = defaultFormData }
+
+
 
 -- VIEW
 
@@ -178,15 +168,19 @@ view model =
 
 viewButton : Html Msg
 viewButton =
-    button [ type_ "button", classes "btn btn-primary btn-lg px-4 mb-4", onClick <| Form Open ]
+    button [ type_ "button", classes "btn btn-primary btn-lg px-4 mb-5", onClick <| Form Open ]
         [ text "Neuer Fall" ]
 
 
 viewForm : FormData -> Html Msg
 viewForm formData =
-    form [ onSubmit SaveNewCase ]
-        [ formfields formData |> map FormDataInput
-        , formButtons <| Form CloseAndReset
+    div []
+        [ form
+            [ onSubmit SaveAndReset, class "mb-5" ]
+            [ formfields formData |> map FormDataMsg
+            , formButtons <| Form CloseAndReset
+            ]
+        , hr [ classes "col-4 mb-5" ] []
         ]
 
 
@@ -271,7 +265,7 @@ gegenstand a =
         a
 
 
-art : Art -> Html FormDataInput
+art : Case.Art -> Html FormDataInput
 art a =
     let
         idPrefix : String
@@ -285,21 +279,22 @@ art a =
             [ id (idPrefix ++ "Select")
             , class "form-control"
             , attribute "aria-describedby" (idPrefix ++ "Help")
-            , onInput (\value -> stringToArt value |> ArtMsg)
+            , onInput (\value -> Case.stringToArt value |> ArtMsg)
             ]
-            [ artOption Verteidiger a
-            , artOption Nebenklaeger a
-            , artOption Zeugenbeistand a
+            [ artOption Case.Verteidiger a
+            , artOption Case.Nebenklaeger a
+            , artOption Case.Zeugenbeistand a
+            , artOption Case.Adhaesionsklaeger a
             ]
         , div [ id (idPrefix ++ "Help"), class "form-text" ]
             [ text "" ]
         ]
 
 
-artOption : Art -> Art -> Html FormDataInput
+artOption : Case.Art -> Case.Art -> Html FormDataInput
 artOption a b =
-    option [ value <| artToString a, selected (a == b) ]
-        [ text <| artToString a ]
+    option [ value <| Case.artToString a, selected (a == b) ]
+        [ text <| Case.artToString a ]
 
 
 beschreibung : Value -> Html FormDataInput
