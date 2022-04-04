@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Case
 import Html exposing (..)
-import Html.Attributes exposing (class, href, scope)
+import Html.Attributes exposing (class, href, scope, type_)
 import Html.Events exposing (onClick)
 import NewCaseForm
 import Shared exposing (classes)
@@ -18,8 +18,12 @@ main =
         }
 
 
+
+-- MODEL
+
+
 type alias Model =
-    { newCase : NewCaseForm.Model
+    { newCaseForm : Maybe NewCaseForm.Model
     , cases : List Case.Model
     }
 
@@ -27,38 +31,55 @@ type alias Model =
 init : Model
 init =
     Model
-        NewCaseForm.defaults
+        Nothing
         []
 
 
+
+-- UPDATE
+
+
 type Msg
-    = NewCaseMsg NewCaseForm.Msg
+    = OpenNewCaseForm
+    | NewCaseMsg NewCaseForm.Msg
     | OpenCaseDetail
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        OpenNewCaseForm ->
+            { model | newCaseForm = Just NewCaseForm.init }
+
         NewCaseMsg innerMsg ->
             let
                 innerModel : NewCaseForm.Model
                 innerModel =
-                    NewCaseForm.update innerMsg model.newCase
-            in
-            case innerModel.save of
-                Nothing ->
-                    { model | newCase = innerModel }
+                    case model.newCaseForm of
+                        Just v ->
+                            NewCaseForm.update innerMsg v
 
-                Just c ->
-                    let
-                        updatedInnerModel =
-                            { innerModel | save = Nothing }
-                    in
-                    { model | newCase = updatedInnerModel, cases = model.cases ++ [ c ] }
+                        Nothing ->
+                            NewCaseForm.update innerMsg NewCaseForm.init
+            in
+            case innerModel.status of
+                -- TODO: Try not to check inner status here.
+                NewCaseForm.Open ->
+                    { model | newCaseForm = Just innerModel }
+
+                NewCaseForm.Saved c ->
+                    { model | newCaseForm = Nothing, cases = model.cases ++ [ c ] }
+
+                NewCaseForm.Canceled ->
+                    { model | newCaseForm = Nothing }
 
         OpenCaseDetail ->
             -- TODO: Add this case here.
             model
+
+
+
+-- VIEW
 
 
 view : Model -> Html Msg
@@ -67,16 +88,27 @@ view model =
         [ header [ classes "d-flex align-items-center pb-3 mb-5 border-bottom" ]
             [ a [ href "/", classes "d-flex align-items-center text-dark text-decoration-none" ]
                 [ span [ class "fs-4" ]
-                    [ text <| "Fachanwalt für Strafrecht" ++ model.newCase.formData.rubrum ]
+                    [ text <| "Fachanwalt für Strafrecht" ]
                 ]
             ]
         , main_ []
             [ h1 [ class "mb-5" ]
                 [ text "Meine Fallliste" ]
-            , NewCaseForm.view model.newCase |> map NewCaseMsg
+            , newCaseForm model
             , caseListView model
             ]
         ]
+
+
+newCaseForm : Model -> Html Msg
+newCaseForm model =
+    case model.newCaseForm of
+        Nothing ->
+            button [ type_ "button", classes "btn btn-primary btn-lg px-4 mb-5", onClick <| OpenNewCaseForm ]
+                [ text "Neuer Fall" ]
+
+        Just innerModel ->
+            NewCaseForm.view innerModel |> map NewCaseMsg
 
 
 caseListView : Model -> Html Msg

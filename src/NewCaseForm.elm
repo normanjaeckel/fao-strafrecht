@@ -1,4 +1,4 @@
-module NewCaseForm exposing (Model, Msg, defaults, update, view, viewButton)
+module NewCaseForm exposing (FormStatus(..), Model, Msg, init, update, view)
 
 import Case
 import Html exposing (..)
@@ -13,7 +13,6 @@ import Shared exposing (classes)
 
 {-| Model controls the form to create a new case.
 
-    formOpen :      Becomes True when the user clicks on the button to open a new (empty) form.
     formData :      Contains data from all form fields.
     invalidFields : Holds booleans for all fields that have been filled with
                     invalid data (i. e. fields that must not be empty).
@@ -21,10 +20,9 @@ import Shared exposing (classes)
 
 -}
 type alias Model =
-    { formOpen : Bool
-    , formData : FormData
+    { formData : FormData
     , invalidFields : InvalidFields
-    , save : Maybe Case.Model
+    , status : FormStatus
     }
 
 
@@ -50,13 +48,18 @@ type alias InvalidFields =
     }
 
 
-defaults : Model
-defaults =
+type FormStatus
+    = Open
+    | Saved Case.Model
+    | Canceled
+
+
+init : Model
+init =
     Model
-        False
         defaultFormData
         defaultInvalidFields
-        Nothing
+        Open
 
 
 defaultFormData : FormData
@@ -83,16 +86,9 @@ defaultInvalidFields =
 
 
 type Msg
-    = Form FormStatus
-    | FormDataMsg FormDataInput
-    | SaveAndReset
-
-
-{-| Handles opening the form and closing the form without saving any data.
--}
-type FormStatus
-    = Open
-    | CloseAndReset
+    = FormDataMsg FormDataInput
+    | Save
+    | Cancel
 
 
 type FormDataInput
@@ -110,19 +106,14 @@ type FormDataInput
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Form m ->
-            case m of
-                Open ->
-                    { model | formOpen = True }
-
-                CloseAndReset ->
-                    closeAndReset model
-
         FormDataMsg m ->
             { model | formData = updateFormData m model.formData }
 
-        SaveAndReset ->
-            saveAndReset model
+        Save ->
+            save model
+
+        Cancel ->
+            { model | status = Canceled }
 
 
 updateFormData : FormDataInput -> FormData -> FormData
@@ -156,12 +147,12 @@ updateFormData msg formData =
             { formData | stand = v }
 
 
-{-| If the form is invalid we just fill the invalidFields property. If the vorm
-is valid we create the new Case, put it into the save property and reset and
-close the form to be ready for the next call.
+{-| If the form is invalid we just fill the invalidFields property. If the form
+is valid we create the new Case, put it into the save property and reset the
+form to be ready for the next call.
 -}
-saveAndReset : Model -> Model
-saveAndReset model =
+save : Model -> Model
+save model =
     let
         f : FormData
         f =
@@ -190,7 +181,7 @@ saveAndReset model =
                     f.beschreibung
                     f.stand
         in
-        closeAndReset { model | save = Just c }
+        { model | status = Saved c }
 
 
 formValidate : FormData -> InvalidFields
@@ -206,15 +197,6 @@ formIsInvalid i =
     i.rubrum || i.beginn || i.stand
 
 
-closeAndReset : Model -> Model
-closeAndReset model =
-    { model
-        | formOpen = False
-        , formData = defaultFormData
-        , invalidFields = defaultInvalidFields
-    }
-
-
 
 -- VIEW
 
@@ -223,26 +205,11 @@ closeAndReset model =
 -}
 view : Model -> Html Msg
 view model =
-    if model.formOpen then
-        viewForm model.formData model.invalidFields
-
-    else
-        viewButton
-
-
-viewButton : Html Msg
-viewButton =
-    button [ type_ "button", classes "btn btn-primary btn-lg px-4 mb-5", onClick <| Form Open ]
-        [ text "Neuer Fall" ]
-
-
-viewForm : FormData -> InvalidFields -> Html Msg
-viewForm formData invalidFields =
     div []
         [ form
-            [ onSubmit SaveAndReset, class "mb-5" ]
-            [ formfields formData invalidFields |> map FormDataMsg
-            , formButtons <| Form CloseAndReset
+            [ onSubmit Save, class "mb-5" ]
+            [ formfields model.formData model.invalidFields |> map FormDataMsg
+            , formButtons Cancel
             ]
         , hr [ classes "col-4 mb-5" ] []
         ]
