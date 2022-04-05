@@ -102,9 +102,9 @@ type FormDataInput
 canceled form.
 -}
 type OutMsg
-    = Saved Case.Model
+    = None
+    | Saved Case.Model
     | Canceled
-    | None
 
 
 {-| Processes the messages of this module and provides also eventually an OutMsg

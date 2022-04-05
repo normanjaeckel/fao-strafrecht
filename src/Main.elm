@@ -41,7 +41,7 @@ init =
 
 type Msg
     = OpenNewCaseForm
-    | NewCaseMsg NewCaseForm.Msg
+    | NewCaseFormMsg NewCaseForm.Msg
     | OpenCaseDetail
 
 
@@ -51,30 +51,35 @@ update msg model =
         OpenNewCaseForm ->
             { model | newCaseForm = Just NewCaseForm.init }
 
-        NewCaseMsg innerMsg ->
+        NewCaseFormMsg innerMsg ->
+            handleNewCaseFormMsg innerMsg model
+
+        OpenCaseDetail ->
+            -- TODO: Add this case here.
+            model
+
+
+handleNewCaseFormMsg : NewCaseForm.Msg -> Model -> Model
+handleNewCaseFormMsg msg model =
+    case model.newCaseForm of
+        Nothing ->
+            -- There is no form so ignore the form message.
+            model
+
+        Just f ->
             let
                 ( innerModel, outMsg ) =
-                    case model.newCaseForm of
-                        Just v ->
-                            NewCaseForm.update innerMsg v
-
-                        Nothing ->
-                            -- We raise Canceled as outMsg to ensure that the form stays closed.
-                            ( NewCaseForm.init, NewCaseForm.Canceled )
+                    NewCaseForm.update msg f
             in
             case outMsg of
+                NewCaseForm.None ->
+                    { model | newCaseForm = Just innerModel }
+
                 NewCaseForm.Saved c ->
                     { model | newCaseForm = Nothing, cases = model.cases ++ [ c ] }
 
                 NewCaseForm.Canceled ->
                     { model | newCaseForm = Nothing }
-
-                NewCaseForm.None ->
-                    { model | newCaseForm = Just innerModel }
-
-        OpenCaseDetail ->
-            -- TODO: Add this case here.
-            model
 
 
 
@@ -107,7 +112,7 @@ newCaseForm model =
                 [ text "Neuer Fall" ]
 
         Just innerModel ->
-            NewCaseForm.view innerModel |> map NewCaseMsg
+            NewCaseForm.view innerModel |> map NewCaseFormMsg
 
 
 caseListView : Model -> Html Msg

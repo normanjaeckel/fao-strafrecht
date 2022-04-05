@@ -5164,21 +5164,8 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			aQ: impl.aQ
 		});
 };
-var $author$project$NewCaseForm$Canceled = {$: 1};
-var $author$project$NewCaseForm$Model = F2(
-	function (formData, invalidFields) {
-		return {A: formData, H: invalidFields};
-	});
-var $author$project$Case$Verteidiger = 0;
-var $author$project$Case$defaultArt = 0;
-var $author$project$NewCaseForm$defaultFormData = {aq: $author$project$Case$defaultArt, ar: '', as: '', at: '', ay: '', aA: '', aB: '', aL: '', aM: 'laufend'};
-var $author$project$NewCaseForm$InvalidFields = F3(
-	function (rubrum, beginn, stand) {
-		return {as: beginn, aL: rubrum, aM: stand};
-	});
-var $author$project$NewCaseForm$defaultInvalidFields = A3($author$project$NewCaseForm$InvalidFields, false, false, false);
-var $author$project$NewCaseForm$init = A2($author$project$NewCaseForm$Model, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields);
-var $author$project$NewCaseForm$None = {$: 2};
+var $author$project$NewCaseForm$Canceled = {$: 2};
+var $author$project$NewCaseForm$None = {$: 0};
 var $author$project$Case$Model = function (number) {
 	return function (rubrum) {
 		return function (az) {
@@ -5201,11 +5188,15 @@ var $author$project$Case$Model = function (number) {
 	};
 };
 var $author$project$NewCaseForm$Saved = function (a) {
-	return {$: 0, a: a};
+	return {$: 1, a: a};
 };
 var $author$project$NewCaseForm$formIsInvalid = function (i) {
 	return i.aL || (i.as || i.aM);
 };
+var $author$project$NewCaseForm$InvalidFields = F3(
+	function (rubrum, beginn, stand) {
+		return {as: beginn, aL: rubrum, aM: stand};
+	});
 var $author$project$NewCaseForm$formValidate = function (f) {
 	return A3($author$project$NewCaseForm$InvalidFields, f.aL === '', f.as === '', f.aM === '');
 };
@@ -5293,6 +5284,50 @@ var $author$project$NewCaseForm$update = F2(
 				return _Utils_Tuple2(model, $author$project$NewCaseForm$Canceled);
 		}
 	});
+var $author$project$Main$handleNewCaseFormMsg = F2(
+	function (msg, model) {
+		var _v0 = model.s;
+		if (_v0.$ === 1) {
+			return model;
+		} else {
+			var f = _v0.a;
+			var _v1 = A2($author$project$NewCaseForm$update, msg, f);
+			var innerModel = _v1.a;
+			var outMsg = _v1.b;
+			switch (outMsg.$) {
+				case 0:
+					return _Utils_update(
+						model,
+						{
+							s: $elm$core$Maybe$Just(innerModel)
+						});
+				case 1:
+					var c = outMsg.a;
+					return _Utils_update(
+						model,
+						{
+							G: _Utils_ap(
+								model.G,
+								_List_fromArray(
+									[c])),
+							s: $elm$core$Maybe$Nothing
+						});
+				default:
+					return _Utils_update(
+						model,
+						{s: $elm$core$Maybe$Nothing});
+			}
+		}
+	});
+var $author$project$NewCaseForm$Model = F2(
+	function (formData, invalidFields) {
+		return {A: formData, H: invalidFields};
+	});
+var $author$project$Case$Verteidiger = 0;
+var $author$project$Case$defaultArt = 0;
+var $author$project$NewCaseForm$defaultFormData = {aq: $author$project$Case$defaultArt, ar: '', as: '', at: '', ay: '', aA: '', aB: '', aL: '', aM: 'laufend'};
+var $author$project$NewCaseForm$defaultInvalidFields = A3($author$project$NewCaseForm$InvalidFields, false, false, false);
+var $author$project$NewCaseForm$init = A2($author$project$NewCaseForm$Model, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields);
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5304,40 +5339,7 @@ var $author$project$Main$update = F2(
 					});
 			case 1:
 				var innerMsg = msg.a;
-				var _v1 = function () {
-					var _v2 = model.s;
-					if (!_v2.$) {
-						var v = _v2.a;
-						return A2($author$project$NewCaseForm$update, innerMsg, v);
-					} else {
-						return _Utils_Tuple2($author$project$NewCaseForm$init, $author$project$NewCaseForm$Canceled);
-					}
-				}();
-				var innerModel = _v1.a;
-				var outMsg = _v1.b;
-				switch (outMsg.$) {
-					case 0:
-						var c = outMsg.a;
-						return _Utils_update(
-							model,
-							{
-								G: _Utils_ap(
-									model.G,
-									_List_fromArray(
-										[c])),
-								s: $elm$core$Maybe$Nothing
-							});
-					case 1:
-						return _Utils_update(
-							model,
-							{s: $elm$core$Maybe$Nothing});
-					default:
-						return _Utils_update(
-							model,
-							{
-								s: $elm$core$Maybe$Just(innerModel)
-							});
-				}
+				return A2($author$project$Main$handleNewCaseFormMsg, innerMsg, model);
 			default:
 				return model;
 		}
@@ -5573,7 +5575,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm$html$Html$main_ = _VirtualDom_node('main');
-var $author$project$Main$NewCaseMsg = function (a) {
+var $author$project$Main$NewCaseFormMsg = function (a) {
 	return {$: 1, a: a};
 };
 var $author$project$Main$OpenNewCaseForm = {$: 0};
@@ -5983,7 +5985,7 @@ var $author$project$Main$newCaseForm = function (model) {
 		var innerModel = _v0.a;
 		return A2(
 			$elm$html$Html$map,
-			$author$project$Main$NewCaseMsg,
+			$author$project$Main$NewCaseFormMsg,
 			$author$project$NewCaseForm$view(innerModel));
 	}
 };
