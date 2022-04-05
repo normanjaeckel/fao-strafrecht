@@ -53,25 +53,24 @@ update msg model =
 
         NewCaseMsg innerMsg ->
             let
-                innerModel : NewCaseForm.Model
-                innerModel =
+                ( innerModel, outMsg ) =
                     case model.newCaseForm of
                         Just v ->
                             NewCaseForm.update innerMsg v
 
                         Nothing ->
-                            NewCaseForm.update innerMsg NewCaseForm.init
+                            -- We raise Canceled as outMsg to ensure that the form stays closed.
+                            ( NewCaseForm.init, NewCaseForm.Canceled )
             in
-            case innerModel.status of
-                -- TODO: Try not to check inner status here.
-                NewCaseForm.Open ->
-                    { model | newCaseForm = Just innerModel }
-
+            case outMsg of
                 NewCaseForm.Saved c ->
                     { model | newCaseForm = Nothing, cases = model.cases ++ [ c ] }
 
                 NewCaseForm.Canceled ->
                     { model | newCaseForm = Nothing }
+
+                NewCaseForm.None ->
+                    { model | newCaseForm = Just innerModel }
 
         OpenCaseDetail ->
             -- TODO: Add this case here.

@@ -1858,8 +1858,8 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 		flagDecoder,
 		args,
 		impl.aE,
-		impl.aQ,
-		impl.aO,
+		impl.aP,
+		impl.aN,
 		function() { return function() {} }
 	);
 });
@@ -3929,10 +3929,10 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 		flagDecoder,
 		args,
 		impl.aE,
-		impl.aQ,
-		impl.aO,
+		impl.aP,
+		impl.aN,
 		function(sendToApp, initialModel) {
-			var view = impl.aR;
+			var view = impl.aQ;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3965,11 +3965,11 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		flagDecoder,
 		args,
 		impl.aE,
-		impl.aQ,
-		impl.aO,
+		impl.aP,
+		impl.aN,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.L && impl.L(sendToApp)
-			var view = impl.aR;
+			var view = impl.aQ;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3982,7 +3982,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aP) && (_VirtualDom_doc.title = title = doc.aP);
+				(title !== doc.aO) && (_VirtualDom_doc.title = title = doc.aO);
 			});
 		}
 	);
@@ -4073,9 +4073,9 @@ function _Browser_application(impl)
 		{
 			return A3(impl.aE, flags, _Browser_getUrl(), key);
 		},
-		aR: impl.aR,
 		aQ: impl.aQ,
-		aO: impl.aO
+		aP: impl.aP,
+		aN: impl.aN
 	});
 }
 
@@ -5152,23 +5152,23 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			aE: function (_v0) {
 				return _Utils_Tuple2(impl.aE, $elm$core$Platform$Cmd$none);
 			},
-			aO: function (_v1) {
+			aN: function (_v1) {
 				return $elm$core$Platform$Sub$none;
 			},
-			aQ: F2(
+			aP: F2(
 				function (msg, model) {
 					return _Utils_Tuple2(
-						A2(impl.aQ, msg, model),
+						A2(impl.aP, msg, model),
 						$elm$core$Platform$Cmd$none);
 				}),
-			aR: impl.aR
+			aQ: impl.aQ
 		});
 };
-var $author$project$NewCaseForm$Model = F3(
-	function (formData, invalidFields, status) {
-		return {A: formData, H: invalidFields, aN: status};
+var $author$project$NewCaseForm$Canceled = {$: 1};
+var $author$project$NewCaseForm$Model = F2(
+	function (formData, invalidFields) {
+		return {A: formData, H: invalidFields};
 	});
-var $author$project$NewCaseForm$Open = {$: 0};
 var $author$project$Case$Verteidiger = 0;
 var $author$project$Case$defaultArt = 0;
 var $author$project$NewCaseForm$defaultFormData = {aq: $author$project$Case$defaultArt, ar: '', as: '', at: '', ay: '', aA: '', aB: '', aL: '', aM: 'laufend'};
@@ -5177,8 +5177,8 @@ var $author$project$NewCaseForm$InvalidFields = F3(
 		return {as: beginn, aL: rubrum, aM: stand};
 	});
 var $author$project$NewCaseForm$defaultInvalidFields = A3($author$project$NewCaseForm$InvalidFields, false, false, false);
-var $author$project$NewCaseForm$init = A3($author$project$NewCaseForm$Model, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields, $author$project$NewCaseForm$Open);
-var $author$project$NewCaseForm$Canceled = {$: 2};
+var $author$project$NewCaseForm$init = A2($author$project$NewCaseForm$Model, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields);
+var $author$project$NewCaseForm$None = {$: 2};
 var $author$project$Case$Model = function (number) {
 	return function (rubrum) {
 		return function (az) {
@@ -5201,7 +5201,7 @@ var $author$project$Case$Model = function (number) {
 	};
 };
 var $author$project$NewCaseForm$Saved = function (a) {
-	return {$: 1, a: a};
+	return {$: 0, a: a};
 };
 var $author$project$NewCaseForm$formIsInvalid = function (i) {
 	return i.aL || (i.as || i.aM);
@@ -5213,16 +5213,16 @@ var $author$project$NewCaseForm$save = function (model) {
 	var f = model.A;
 	var v = $author$project$NewCaseForm$formValidate(f);
 	if ($author$project$NewCaseForm$formIsInvalid(v)) {
-		return _Utils_update(
-			model,
-			{H: v});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{H: v}),
+			$author$project$NewCaseForm$None);
 	} else {
 		var c = $author$project$Case$Model(42)(f.aL)(f.ar)(f.aB)(f.as)(f.ay)(f.aA)(f.aq)(f.at)(f.aM);
-		return _Utils_update(
+		return _Utils_Tuple2(
 			model,
-			{
-				aN: $author$project$NewCaseForm$Saved(c)
-			});
+			$author$project$NewCaseForm$Saved(c));
 	}
 };
 var $author$project$NewCaseForm$updateFormData = F2(
@@ -5280,17 +5280,17 @@ var $author$project$NewCaseForm$update = F2(
 		switch (msg.$) {
 			case 0:
 				var m = msg.a;
-				return _Utils_update(
-					model,
-					{
-						A: A2($author$project$NewCaseForm$updateFormData, m, model.A)
-					});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							A: A2($author$project$NewCaseForm$updateFormData, m, model.A)
+						}),
+					$author$project$NewCaseForm$None);
 			case 1:
 				return $author$project$NewCaseForm$save(model);
 			default:
-				return _Utils_update(
-					model,
-					{aN: $author$project$NewCaseForm$Canceled});
+				return _Utils_Tuple2(model, $author$project$NewCaseForm$Canceled);
 		}
 	});
 var $author$project$Main$update = F2(
@@ -5304,25 +5304,20 @@ var $author$project$Main$update = F2(
 					});
 			case 1:
 				var innerMsg = msg.a;
-				var innerModel = function () {
+				var _v1 = function () {
 					var _v2 = model.s;
 					if (!_v2.$) {
 						var v = _v2.a;
 						return A2($author$project$NewCaseForm$update, innerMsg, v);
 					} else {
-						return A2($author$project$NewCaseForm$update, innerMsg, $author$project$NewCaseForm$init);
+						return _Utils_Tuple2($author$project$NewCaseForm$init, $author$project$NewCaseForm$Canceled);
 					}
 				}();
-				var _v1 = innerModel.aN;
-				switch (_v1.$) {
+				var innerModel = _v1.a;
+				var outMsg = _v1.b;
+				switch (outMsg.$) {
 					case 0:
-						return _Utils_update(
-							model,
-							{
-								s: $elm$core$Maybe$Just(innerModel)
-							});
-					case 1:
-						var c = _v1.a;
+						var c = outMsg.a;
 						return _Utils_update(
 							model,
 							{
@@ -5332,10 +5327,16 @@ var $author$project$Main$update = F2(
 										[c])),
 								s: $elm$core$Maybe$Nothing
 							});
-					default:
+					case 1:
 						return _Utils_update(
 							model,
 							{s: $elm$core$Maybe$Nothing});
+					default:
+						return _Utils_update(
+							model,
+							{
+								s: $elm$core$Maybe$Just(innerModel)
+							});
 				}
 			default:
 				return model;
@@ -6046,6 +6047,6 @@ var $author$project$Main$view = function (model) {
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
-	{aE: $author$project$Main$init, aQ: $author$project$Main$update, aR: $author$project$Main$view});
+	{aE: $author$project$Main$init, aP: $author$project$Main$update, aQ: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(0))(0)}});}(this));

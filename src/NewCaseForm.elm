@@ -1,4 +1,4 @@
-module NewCaseForm exposing (FormStatus(..), Model, Msg, init, update, view)
+module NewCaseForm exposing (Model, Msg, OutMsg(..), init, update, view)
 
 import Case
 import Html exposing (..)
@@ -16,13 +16,11 @@ import Shared exposing (classes)
     formData :      Contains data from all form fields.
     invalidFields : Holds booleans for all fields that have been filled with
                     invalid data (i. e. fields that must not be empty).
-    save :          Contains a newly created case after the user clicked the Save button.
 
 -}
 type alias Model =
     { formData : FormData
     , invalidFields : InvalidFields
-    , status : FormStatus
     }
 
 
@@ -48,18 +46,13 @@ type alias InvalidFields =
     }
 
 
-type FormStatus
-    = Open
-    | Saved Case.Model
-    | Canceled
-
-
+{-| Initializes empty form.
+-}
 init : Model
 init =
     Model
         defaultFormData
         defaultInvalidFields
-        Open
 
 
 defaultFormData : FormData
@@ -85,6 +78,8 @@ defaultInvalidFields =
 -- UPDATE
 
 
+{-| Messages this module may send and receive.
+-}
 type Msg
     = FormDataMsg FormDataInput
     | Save
@@ -103,17 +98,29 @@ type FormDataInput
     | Stand String
 
 
-update : Msg -> Model -> Model
+{-| These pseudo messages are meant to inform the parent about a saved oder
+canceled form.
+-}
+type OutMsg
+    = Saved Case.Model
+    | Canceled
+    | None
+
+
+{-| Processes the messages of this module and provides also eventually an OutMsg
+for the parent.
+-}
+update : Msg -> Model -> ( Model, OutMsg )
 update msg model =
     case msg of
         FormDataMsg m ->
-            { model | formData = updateFormData m model.formData }
+            ( { model | formData = updateFormData m model.formData }, None )
 
         Save ->
             save model
 
         Cancel ->
-            { model | status = Canceled }
+            ( model, Canceled )
 
 
 updateFormData : FormDataInput -> FormData -> FormData
@@ -147,11 +154,10 @@ updateFormData msg formData =
             { formData | stand = v }
 
 
-{-| If the form is invalid we just fill the invalidFields property. If the form
-is valid we create the new Case, put it into the save property and reset the
-form to be ready for the next call.
+{-| If the form is invalid, we just fill the invalidFields property. If the form
+is valid, we create the new Case and send it to the parent.
 -}
-save : Model -> Model
+save : Model -> ( Model, OutMsg )
 save model =
     let
         f : FormData
@@ -163,7 +169,7 @@ save model =
             formValidate f
     in
     if formIsInvalid v then
-        { model | invalidFields = v }
+        ( { model | invalidFields = v }, None )
 
     else
         let
@@ -181,7 +187,7 @@ save model =
                     f.beschreibung
                     f.stand
         in
-        { model | status = Saved c }
+        ( model, Saved c )
 
 
 formValidate : FormData -> InvalidFields
@@ -201,7 +207,7 @@ formIsInvalid i =
 -- VIEW
 
 
-{-| Show the form or only a button so the user can click and open.
+{-| Show the form with save and cancel button.
 -}
 view : Model -> Html Msg
 view model =
@@ -242,7 +248,7 @@ formButtons cancelMsg =
 
 
 
--- All form Fields with helper methods
+-- All form fields with helper methods follow:
 
 
 rubrum : Value -> IsInvalid -> Html FormDataInput
