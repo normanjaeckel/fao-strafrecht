@@ -67,13 +67,9 @@ handleNewCaseFormMsg msg model =
             model
 
         Just f ->
-            let
-                ( innerModel, outMsg ) =
-                    NewCaseForm.update msg f
-            in
-            case outMsg of
-                NewCaseForm.None ->
-                    { model | newCaseForm = Just innerModel }
+            case NewCaseForm.update msg f of
+                NewCaseForm.Updated m ->
+                    { model | newCaseForm = Just m }
 
                 NewCaseForm.Saved c ->
                     { model | newCaseForm = Nothing, cases = model.cases ++ [ c ] }

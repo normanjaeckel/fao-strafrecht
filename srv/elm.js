@@ -5164,8 +5164,10 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			aQ: impl.aQ
 		});
 };
-var $author$project$NewCaseForm$Canceled = {$: 2};
-var $author$project$NewCaseForm$None = {$: 0};
+var $author$project$NewCaseForm$Canceled = {$: 0};
+var $author$project$NewCaseForm$Updated = function (a) {
+	return {$: 2, a: a};
+};
 var $author$project$Case$Model = function (number) {
 	return function (rubrum) {
 		return function (az) {
@@ -5204,16 +5206,13 @@ var $author$project$NewCaseForm$save = function (model) {
 	var f = model.A;
 	var v = $author$project$NewCaseForm$formValidate(f);
 	if ($author$project$NewCaseForm$formIsInvalid(v)) {
-		return _Utils_Tuple2(
+		return $author$project$NewCaseForm$Updated(
 			_Utils_update(
 				model,
-				{H: v}),
-			$author$project$NewCaseForm$None);
+				{H: v}));
 	} else {
 		var c = $author$project$Case$Model(42)(f.aL)(f.ar)(f.aB)(f.as)(f.ay)(f.aA)(f.aq)(f.at)(f.aM);
-		return _Utils_Tuple2(
-			model,
-			$author$project$NewCaseForm$Saved(c));
+		return $author$project$NewCaseForm$Saved(c);
 	}
 };
 var $author$project$NewCaseForm$updateFormData = F2(
@@ -5271,17 +5270,16 @@ var $author$project$NewCaseForm$update = F2(
 		switch (msg.$) {
 			case 0:
 				var m = msg.a;
-				return _Utils_Tuple2(
+				return $author$project$NewCaseForm$Updated(
 					_Utils_update(
 						model,
 						{
 							A: A2($author$project$NewCaseForm$updateFormData, m, model.A)
-						}),
-					$author$project$NewCaseForm$None);
+						}));
 			case 1:
 				return $author$project$NewCaseForm$save(model);
 			default:
-				return _Utils_Tuple2(model, $author$project$NewCaseForm$Canceled);
+				return $author$project$NewCaseForm$Canceled;
 		}
 	});
 var $author$project$Main$handleNewCaseFormMsg = F2(
@@ -5292,17 +5290,16 @@ var $author$project$Main$handleNewCaseFormMsg = F2(
 		} else {
 			var f = _v0.a;
 			var _v1 = A2($author$project$NewCaseForm$update, msg, f);
-			var innerModel = _v1.a;
-			var outMsg = _v1.b;
-			switch (outMsg.$) {
-				case 0:
+			switch (_v1.$) {
+				case 2:
+					var m = _v1.a;
 					return _Utils_update(
 						model,
 						{
-							s: $elm$core$Maybe$Just(innerModel)
+							s: $elm$core$Maybe$Just(m)
 						});
 				case 1:
-					var c = outMsg.a;
+					var c = _v1.a;
 					return _Utils_update(
 						model,
 						{

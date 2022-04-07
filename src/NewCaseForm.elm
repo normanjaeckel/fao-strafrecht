@@ -1,4 +1,4 @@
-module NewCaseForm exposing (Model, Msg, OutMsg(..), init, update, view)
+module NewCaseForm exposing (Action(..), Model, Msg, init, update, view)
 
 import Case
 import Html exposing (..)
@@ -98,29 +98,28 @@ type FormDataInput
     | Stand String
 
 
-{-| These pseudo messages are meant to inform the parent about a saved oder
-canceled form.
+{-| The return value of the update function.
 -}
-type OutMsg
-    = None
+type Action
+    = Canceled
     | Saved Case.Model
-    | Canceled
+    | Updated Model
 
 
 {-| Processes the messages of this module and provides also eventually an OutMsg
 for the parent.
 -}
-update : Msg -> Model -> ( Model, OutMsg )
+update : Msg -> Model -> Action
 update msg model =
     case msg of
         FormDataMsg m ->
-            ( { model | formData = updateFormData m model.formData }, None )
+            Updated { model | formData = updateFormData m model.formData }
 
         Save ->
             save model
 
         Cancel ->
-            ( model, Canceled )
+            Canceled
 
 
 updateFormData : FormDataInput -> FormData -> FormData
@@ -157,7 +156,7 @@ updateFormData msg formData =
 {-| If the form is invalid, we just fill the invalidFields property. If the form
 is valid, we create the new Case and send it to the parent.
 -}
-save : Model -> ( Model, OutMsg )
+save : Model -> Action
 save model =
     let
         f : FormData
@@ -169,7 +168,7 @@ save model =
             formValidate f
     in
     if formIsInvalid v then
-        ( { model | invalidFields = v }, None )
+        Updated { model | invalidFields = v }
 
     else
         let
@@ -187,7 +186,7 @@ save model =
                     f.beschreibung
                     f.stand
         in
-        ( model, Saved c )
+        Saved c
 
 
 formValidate : FormData -> InvalidFields
