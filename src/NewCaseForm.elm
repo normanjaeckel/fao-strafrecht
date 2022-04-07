@@ -175,7 +175,6 @@ save model =
             c : Case.Model
             c =
                 Case.Model
-                    42
                     f.rubrum
                     f.az
                     f.gericht

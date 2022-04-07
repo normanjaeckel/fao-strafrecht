@@ -2,8 +2,7 @@ module Case exposing (Art(..), Model, artToString, defaultArt, stringToArt)
 
 
 type alias Model =
-    { number : Int
-    , rubrum : String
+    { rubrum : String
     , az : String
     , gericht : String
     , beginn : String
