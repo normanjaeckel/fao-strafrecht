@@ -5,19 +5,27 @@ tasks:
   default:
     - task: test
     - task: staticcheck
+    - task: build
 
   test:
     cmds:
       - go test ./...
     sources:
+      - main.go
       - pkg/**/*.go
 
   staticcheck:
     cmds:
       - staticcheck -checks all ./...
     sources:
+      - main.go
       - pkg/**/*.go
 
-# srv:
-#   cmds:
-#     - python -m http.server --bind 127.0.0.1 --directory srv
+  build:
+    cmds:
+      - go build
+    sources:
+      - main.go
+      - pkg/**/*.go
+    generates:
+      - server
