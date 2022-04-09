@@ -1,0 +1,17 @@
+# https://taskfile.dev
+---
+version: '3'
+
+includes:
+  server:
+    taskfile: ./server
+    dir: ./server
+
+  client:
+    taskfile: ./client
+    dir: ./client
+
+tasks:
+  default:
+    - task: server:default
+    - task: client:default

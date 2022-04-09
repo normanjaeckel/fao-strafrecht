@@ -1,0 +1,14 @@
+---
+version: '3'
+
+tasks:
+  default:
+    - task: build
+
+  build:
+    cmds:
+      - elm make --output=public/elm.js --optimize src/Main.elm
+    sources:
+      - src/**/*.elm
+    generates:
+      - public/elm.js

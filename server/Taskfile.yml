@@ -1,0 +1,23 @@
+---
+version: '3'
+
+tasks:
+  default:
+    - task: test
+    - task: staticcheck
+
+  test:
+    cmds:
+      - go test ./...
+    sources:
+      - pkg/**/*.go
+
+  staticcheck:
+    cmds:
+      - staticcheck -checks all ./...
+    sources:
+      - pkg/**/*.go
+
+# srv:
+#   cmds:
+#     - python -m http.server --bind 127.0.0.1 --directory srv
