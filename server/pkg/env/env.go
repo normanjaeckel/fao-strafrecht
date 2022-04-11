@@ -1,5 +1,9 @@
 /*
 Package env provides the environment variables that are used in this service.
+These are:
+
+  FAO_STRAFRECHT_HOST
+  FAO_STRAFRECHT_PORT
 */
 package env
 
@@ -22,7 +26,10 @@ func Parse(fn deps.GetEnvFunc) (Environment, error) {
 	f := envOrDefault(fn)
 	e := Environment{}
 
+	// FAO_STRAFRECHT_HOST
 	e.Host = f("FAO_STRAFRECHT_HOST", "")
+
+	// FAO_STRAFRECHT_PORT
 	port := f("FAO_STRAFRECHT_PORT", "8000")
 	portInt, err := strconv.Atoi(port)
 	if err != nil {

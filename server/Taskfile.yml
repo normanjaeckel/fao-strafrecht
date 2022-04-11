@@ -3,9 +3,20 @@ version: '3'
 
 tasks:
   default:
+    - task: copyClient
     - task: test
     - task: staticcheck
     - task: build
+
+  copyClient:
+    cmds:
+      - rm -rf pkg/public/files
+      - mkdir -p pkg/public/files
+      - cp ../client/index.html pkg/public/files/index.html
+      - cp -r ../client/assets pkg/public/files/
+    sources:
+      - ../client/index.html
+      - ../client/assets/*
 
   test:
     cmds:
@@ -29,3 +40,7 @@ tasks:
       - pkg/**/*.go
     generates:
       - server
+
+  run:
+    - task: build
+    - ./server

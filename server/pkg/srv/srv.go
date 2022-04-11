@@ -12,6 +12,7 @@ import (
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/env"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
 
@@ -39,11 +40,18 @@ func Run(logger deps.Logger, getEnvFunc deps.GetEnvFunc) error {
 	return nil
 }
 
+func Handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle("/", public.Files())
+	return mux
+}
+
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
 func Start(ctx context.Context, logger deps.Logger, addr string) error {
 	s := &http.Server{
-		Addr: addr,
+		Addr:    addr,
+		Handler: Handler(),
 	}
 
 	go func() {

@@ -10,6 +10,6 @@ type Logger interface {
 	Fatalf(format string, v ...any)
 }
 
-// GetEnvFunc is a function that retrieves environment variables. Use os.Getenv
-// in production.
+// GetEnvFunc is a function that retrieves environment variables. You may use
+// os.Getenv in production.
 type GetEnvFunc func(key string) string
