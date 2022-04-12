@@ -16,14 +16,14 @@ tasks:
       - cp -r ../client/assets pkg/public/files/
     sources:
       - ../client/index.html
-      - ../client/assets/*
+      - ../client/assets/**/*
 
   test:
     cmds:
       - go test ./...
     sources:
       - main.go
-      - pkg/**/*.go
+      - pkg/**/*
 
   staticcheck:
     cmds:
@@ -37,10 +37,12 @@ tasks:
       - go build
     sources:
       - main.go
-      - pkg/**/*.go
+      - pkg/**/*
     generates:
       - server
 
   run:
-    - task: build
-    - ./server
+    cmds:
+      - ./server
+    sources:
+      - server

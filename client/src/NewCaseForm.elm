@@ -78,8 +78,6 @@ defaultInvalidFields =
 -- UPDATE
 
 
-{-| Messages this module may send and receive.
--}
 type Msg
     = FormDataMsg FormDataInput
     | Save
@@ -106,8 +104,8 @@ type Action
     | Updated Model
 
 
-{-| Processes the messages of this module and provides also eventually an OutMsg
-for the parent.
+{-| Processes the messages of this module and provides also an OutMsg for the
+parent.
 -}
 update : Msg -> Model -> Action
 update msg model =

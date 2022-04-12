@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.O.C === region.T.C)
+	if (region.O.D === region.U.D)
 	{
-		return 'on line ' + region.O.C;
+		return 'on line ' + region.O.D;
 	}
-	return 'on lines ' + region.O.C + ' through ' + region.T.C;
+	return 'on lines ' + region.O.D + ' through ' + region.U.D;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aG,
-		impl.aQ,
-		impl.aO,
+		impl.aH,
+		impl.aR,
+		impl.aP,
 		function() { return function() {} }
 	);
 });
@@ -3928,11 +3928,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aG,
-		impl.aQ,
-		impl.aO,
+		impl.aH,
+		impl.aR,
+		impl.aP,
 		function(sendToApp, initialModel) {
-			var view = impl.aR;
+			var view = impl.aS;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3964,12 +3964,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aG,
-		impl.aQ,
-		impl.aO,
+		impl.aH,
+		impl.aR,
+		impl.aP,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.N && impl.N(sendToApp)
-			var view = impl.aR;
+			var view = impl.aS;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3977,12 +3977,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aw);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.ax);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aP) && (_VirtualDom_doc.title = title = doc.aP);
+				(title !== doc.aQ) && (_VirtualDom_doc.title = title = doc.aQ);
 			});
 		}
 	);
@@ -4038,8 +4038,8 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aI;
-	var onUrlRequest = impl.aJ;
+	var onUrlChange = impl.aJ;
+	var onUrlRequest = impl.aK;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
@@ -4059,9 +4059,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.af === next.af
-							&& curr.X === next.X
-							&& curr.ac.a === next.ac.a
+							&& curr.ag === next.ag
+							&& curr.Y === next.Y
+							&& curr.ad.a === next.ad.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4069,13 +4069,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aG: function(flags)
+		aH: function(flags)
 		{
-			return A3(impl.aG, flags, _Browser_getUrl(), key);
+			return A3(impl.aH, flags, _Browser_getUrl(), key);
 		},
+		aS: impl.aS,
 		aR: impl.aR,
-		aQ: impl.aQ,
-		aO: impl.aO
+		aP: impl.aP
 	});
 }
 
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aE: 'hidden', ax: 'visibilitychange' }
+		? { aF: 'hidden', ay: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aE: 'mozHidden', ax: 'mozvisibilitychange' }
+		? { aF: 'mozHidden', ay: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aE: 'msHidden', ax: 'msvisibilitychange' }
+		? { aF: 'msHidden', ay: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aE: 'webkitHidden', ax: 'webkitvisibilitychange' }
-		: { aE: 'hidden', ax: 'visibilitychange' };
+		? { aF: 'webkitHidden', ay: 'webkitvisibilitychange' }
+		: { aF: 'hidden', ay: 'visibilitychange' };
 }
 
 
@@ -4232,12 +4232,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aj: _Browser_getScene(),
-		am: {
-			ao: _Browser_window.pageXOffset,
-			ap: _Browser_window.pageYOffset,
-			an: _Browser_doc.documentElement.clientWidth,
-			W: _Browser_doc.documentElement.clientHeight
+		ak: _Browser_getScene(),
+		an: {
+			ap: _Browser_window.pageXOffset,
+			aq: _Browser_window.pageYOffset,
+			ao: _Browser_doc.documentElement.clientWidth,
+			X: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4247,8 +4247,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		an: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		W: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		ao: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		X: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4271,15 +4271,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aj: {
-				an: node.scrollWidth,
-				W: node.scrollHeight
+			ak: {
+				ao: node.scrollWidth,
+				X: node.scrollHeight
 			},
-			am: {
-				ao: node.scrollLeft,
-				ap: node.scrollTop,
-				an: node.clientWidth,
-				W: node.clientHeight
+			an: {
+				ap: node.scrollLeft,
+				aq: node.scrollTop,
+				ao: node.clientWidth,
+				X: node.clientHeight
 			}
 		};
 	});
@@ -4309,18 +4309,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aj: _Browser_getScene(),
-			am: {
-				ao: x,
-				ap: y,
-				an: _Browser_doc.documentElement.clientWidth,
-				W: _Browser_doc.documentElement.clientHeight
+			ak: _Browser_getScene(),
+			an: {
+				ap: x,
+				aq: y,
+				ao: _Browser_doc.documentElement.clientWidth,
+				X: _Browser_doc.documentElement.clientHeight
 			},
-			az: {
-				ao: x + rect.left,
-				ap: y + rect.top,
-				an: rect.width,
-				W: rect.height
+			aA: {
+				ap: x + rect.left,
+				aq: y + rect.top,
+				ao: rect.width,
+				X: rect.height
 			}
 		};
 	});
@@ -4355,16 +4355,20 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $author$project$Main$Asc = 0;
-var $author$project$Main$Id = 0;
-var $author$project$Main$Model = F4(
-	function (newCaseForm, cases, sortBy, sortDir) {
-		return {I: cases, s: newCaseForm, D: sortBy, v: sortDir};
+var $author$project$Main$Model = F2(
+	function (newCaseForm, caseTable) {
+		return {x: caseTable, s: newCaseForm};
 	});
 var $elm$core$Maybe$Nothing = {$: 1};
+var $author$project$CaseTable$Asc = 0;
+var $author$project$CaseTable$Id = 0;
+var $author$project$CaseTable$Model = F3(
+	function (cases, sortBy, sortDir) {
+		return {R: cases, E: sortBy, v: sortDir};
+	});
 var $author$project$Case$Model = F9(
 	function (rubrum, az, gericht, beginn, ende, gegenstand, art, beschreibung, stand) {
-		return {as: art, at: az, au: beginn, av: beschreibung, aA: ende, aC: gegenstand, aD: gericht, aM: rubrum, aN: stand};
+		return {at: art, au: az, av: beginn, aw: beschreibung, aB: ende, aD: gegenstand, aE: gericht, aN: rubrum, aO: stand};
 	});
 var $author$project$Case$Verteidiger = 0;
 var $elm$core$Basics$apR = F2(
@@ -4599,7 +4603,7 @@ var $elm$core$List$maximum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Main$insertCase = F2(
+var $author$project$CaseTable$insertCase = F2(
 	function (e, c) {
 		var newId = function () {
 			var _v0 = $elm$core$List$maximum(
@@ -4617,15 +4621,16 @@ var $elm$core$Dict$singleton = F2(
 	function (key, value) {
 		return A5($elm$core$Dict$RBNode_elm_builtin, 1, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
 	});
-var $author$project$Main$someDefaultCases = function () {
+var $author$project$CaseTable$someDefaultCases = function () {
 	var c2 = A9($author$project$Case$Model, 'Müller M. wg Betrug u. a.', '000245/2022', '', '10.10.2020', '', '', 0, '', 'laufend');
-	var c1 = A9($author$project$Case$Model, 'Schulze wg Diebstahl', '000123/2020', '', '26.04.2020', '', '', 0, '', 'laufend');
+	var c1 = A9($author$project$Case$Model, 'Schulze wg. Diebstahl', '000123/2020', '', '26.04.2020', '', '', 0, '', 'laufend');
 	return A2(
-		$author$project$Main$insertCase,
+		$author$project$CaseTable$insertCase,
 		c2,
 		A2($elm$core$Dict$singleton, 1, c1));
 }();
-var $author$project$Main$init = A4($author$project$Main$Model, $elm$core$Maybe$Nothing, $author$project$Main$someDefaultCases, 0, 0);
+var $author$project$CaseTable$init = A3($author$project$CaseTable$Model, $author$project$CaseTable$someDefaultCases, 0, 0);
+var $author$project$Main$init = A2($author$project$Main$Model, $elm$core$Maybe$Nothing, $author$project$CaseTable$init);
 var $elm$core$Result$Err = function (a) {
 	return {$: 1, a: a};
 };
@@ -5017,7 +5022,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {V: fragment, X: host, aa: path, ac: port_, af: protocol, ag: query};
+		return {W: fragment, Y: host, ab: path, ad: port_, ag: protocol, ah: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5302,25 +5307,25 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$sandbox = function (impl) {
 	return _Browser_element(
 		{
-			aG: function (_v0) {
-				return _Utils_Tuple2(impl.aG, $elm$core$Platform$Cmd$none);
+			aH: function (_v0) {
+				return _Utils_Tuple2(impl.aH, $elm$core$Platform$Cmd$none);
 			},
-			aO: function (_v1) {
+			aP: function (_v1) {
 				return $elm$core$Platform$Sub$none;
 			},
-			aQ: F2(
+			aR: F2(
 				function (msg, model) {
 					return _Utils_Tuple2(
-						A2(impl.aQ, msg, model),
+						A2(impl.aR, msg, model),
 						$elm$core$Platform$Cmd$none);
 				}),
-			aR: impl.aR
+			aS: impl.aS
 		});
 };
-var $author$project$Main$Desc = 1;
-var $author$project$Main$changeSorting = F2(
+var $author$project$CaseTable$Desc = 1;
+var $author$project$CaseTable$changeSorting = F2(
 	function (model, s) {
-		if (_Utils_eq(model.D, s)) {
+		if (_Utils_eq(model.E, s)) {
 			var _v0 = model.v;
 			if (!_v0) {
 				return _Utils_update(
@@ -5334,8 +5339,33 @@ var $author$project$Main$changeSorting = F2(
 		} else {
 			return _Utils_update(
 				model,
-				{D: s, v: 0});
+				{E: s, v: 0});
 		}
+	});
+var $author$project$CaseTable$update = F2(
+	function (msg, model) {
+		if (!msg.$) {
+			return model;
+		} else {
+			var s = msg.a;
+			return A2($author$project$CaseTable$changeSorting, model, s);
+		}
+	});
+var $author$project$Main$handleCaseTableMsg = F2(
+	function (msg, model) {
+		return _Utils_update(
+			model,
+			{
+				x: A2($author$project$CaseTable$update, msg, model.x)
+			});
+	});
+var $author$project$Main$insertCaseToTable = F2(
+	function (e, m) {
+		return _Utils_update(
+			m,
+			{
+				R: A2($author$project$CaseTable$insertCase, e, m.R)
+			});
 	});
 var $author$project$NewCaseForm$Canceled = {$: 0};
 var $author$project$NewCaseForm$Updated = function (a) {
@@ -5345,17 +5375,17 @@ var $author$project$NewCaseForm$Saved = function (a) {
 	return {$: 1, a: a};
 };
 var $author$project$NewCaseForm$formIsInvalid = function (i) {
-	return i.aM || (i.au || i.aN);
+	return i.aN || (i.av || i.aO);
 };
 var $author$project$NewCaseForm$InvalidFields = F3(
 	function (rubrum, beginn, stand) {
-		return {au: beginn, aM: rubrum, aN: stand};
+		return {av: beginn, aN: rubrum, aO: stand};
 	});
 var $author$project$NewCaseForm$formValidate = function (f) {
-	return A3($author$project$NewCaseForm$InvalidFields, f.aM === '', f.au === '', f.aN === '');
+	return A3($author$project$NewCaseForm$InvalidFields, f.aN === '', f.av === '', f.aO === '');
 };
 var $author$project$NewCaseForm$save = function (model) {
-	var f = model.B;
+	var f = model.C;
 	var v = $author$project$NewCaseForm$formValidate(f);
 	if ($author$project$NewCaseForm$formIsInvalid(v)) {
 		return $author$project$NewCaseForm$Updated(
@@ -5363,7 +5393,7 @@ var $author$project$NewCaseForm$save = function (model) {
 				model,
 				{J: v}));
 	} else {
-		var c = A9($author$project$Case$Model, f.aM, f.at, f.aD, f.au, f.aA, f.aC, f.as, f.av, f.aN);
+		var c = A9($author$project$Case$Model, f.aN, f.au, f.aE, f.av, f.aB, f.aD, f.at, f.aw, f.aO);
 		return $author$project$NewCaseForm$Saved(c);
 	}
 };
@@ -5374,47 +5404,47 @@ var $author$project$NewCaseForm$updateFormData = F2(
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aM: v});
+					{aN: v});
 			case 1:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{at: v});
+					{au: v});
 			case 2:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aD: v});
+					{aE: v});
 			case 3:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{au: v});
+					{av: v});
 			case 4:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aA: v});
+					{aB: v});
 			case 5:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aC: v});
+					{aD: v});
 			case 6:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{as: v});
+					{at: v});
 			case 7:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{av: v});
+					{aw: v});
 			default:
 				var v = msg.a;
 				return _Utils_update(
 					formData,
-					{aN: v});
+					{aO: v});
 		}
 	});
 var $author$project$NewCaseForm$update = F2(
@@ -5426,7 +5456,7 @@ var $author$project$NewCaseForm$update = F2(
 					_Utils_update(
 						model,
 						{
-							B: A2($author$project$NewCaseForm$updateFormData, m, model.B)
+							C: A2($author$project$NewCaseForm$updateFormData, m, model.C)
 						}));
 			case 1:
 				return $author$project$NewCaseForm$save(model);
@@ -5455,7 +5485,7 @@ var $author$project$Main$handleNewCaseFormMsg = F2(
 					return _Utils_update(
 						model,
 						{
-							I: A2($author$project$Main$insertCase, c, model.I),
+							x: A2($author$project$Main$insertCaseToTable, c, model.x),
 							s: $elm$core$Maybe$Nothing
 						});
 				default:
@@ -5467,10 +5497,10 @@ var $author$project$Main$handleNewCaseFormMsg = F2(
 	});
 var $author$project$NewCaseForm$Model = F2(
 	function (formData, invalidFields) {
-		return {B: formData, J: invalidFields};
+		return {C: formData, J: invalidFields};
 	});
 var $author$project$Case$defaultArt = 0;
-var $author$project$NewCaseForm$defaultFormData = {as: $author$project$Case$defaultArt, at: '', au: '', av: '', aA: '', aC: '', aD: '', aM: '', aN: 'laufend'};
+var $author$project$NewCaseForm$defaultFormData = {at: $author$project$Case$defaultArt, au: '', av: '', aw: '', aB: '', aD: '', aE: '', aN: '', aO: 'laufend'};
 var $author$project$NewCaseForm$defaultInvalidFields = A3($author$project$NewCaseForm$InvalidFields, false, false, false);
 var $author$project$NewCaseForm$init = A2($author$project$NewCaseForm$Model, $author$project$NewCaseForm$defaultFormData, $author$project$NewCaseForm$defaultInvalidFields);
 var $author$project$Main$update = F2(
@@ -5485,20 +5515,23 @@ var $author$project$Main$update = F2(
 			case 1:
 				var innerMsg = msg.a;
 				return A2($author$project$Main$handleNewCaseFormMsg, innerMsg, model);
-			case 2:
-				return model;
 			default:
-				var s = msg.a;
-				return A2($author$project$Main$changeSorting, model, s);
+				var innerMsg = msg.a;
+				return A2($author$project$Main$handleCaseTableMsg, innerMsg, model);
 		}
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
-var $author$project$Main$Beginn = 2;
-var $author$project$Main$Ende = 3;
-var $author$project$Main$Rubrum = 1;
-var $author$project$Main$Stand = 4;
-var $author$project$Main$SortCaseTable = function (a) {
-	return {$: 3, a: a};
+var $author$project$Main$CaseTableMsg = function (a) {
+	return {$: 2, a: a};
+};
+var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
+var $author$project$CaseTable$Beginn = 2;
+var $author$project$CaseTable$Ende = 3;
+var $author$project$CaseTable$Rubrum = 1;
+var $author$project$CaseTable$Stand = 4;
+var $author$project$CaseTable$SortCaseTable = function (a) {
+	return {$: 1, a: a};
 };
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
@@ -5564,7 +5597,7 @@ var $author$project$Shared$classes = function (s) {
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$sortArrows = F3(
+var $author$project$CaseTable$sortArrows = F3(
 	function (current, dir, field) {
 		var arrows = function () {
 			if (_Utils_eq(current, field)) {
@@ -5581,7 +5614,7 @@ var $author$project$Main$sortArrows = F3(
 			$elm$html$Html$span,
 			_List_fromArray(
 				[
-					$author$project$Shared$classes('float-end pe-5')
+					$author$project$Shared$classes('float-end pe-5 default-cursor')
 				]),
 			_List_fromArray(
 				[
@@ -5589,7 +5622,7 @@ var $author$project$Main$sortArrows = F3(
 				]));
 	});
 var $elm$html$Html$th = _VirtualDom_node('th');
-var $author$project$Main$caseListHeader = F3(
+var $author$project$CaseTable$caseListHeader = F3(
 	function (txt, model, sortBy) {
 		return A2(
 			$elm$html$Html$th,
@@ -5597,25 +5630,25 @@ var $author$project$Main$caseListHeader = F3(
 				[
 					$elm$html$Html$Attributes$scope('col'),
 					$elm$html$Html$Events$onClick(
-					$author$project$Main$SortCaseTable(sortBy))
+					$author$project$CaseTable$SortCaseTable(sortBy))
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text(txt),
-					A3($author$project$Main$sortArrows, model.D, model.v, sortBy)
+					A3($author$project$CaseTable$sortArrows, model.E, model.v, sortBy)
 				]));
 	});
-var $author$project$Main$OpenCaseDetail = {$: 2};
+var $author$project$CaseTable$OpenCaseDetail = {$: 0};
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$Main$caseRow = function (_v0) {
+var $author$project$CaseTable$caseRow = function (_v0) {
 	var id = _v0.a;
 	var c = _v0.b;
 	return A2(
 		$elm$html$Html$tr,
 		_List_fromArray(
 			[
-				$elm$html$Html$Events$onClick($author$project$Main$OpenCaseDetail)
+				$elm$html$Html$Events$onClick($author$project$CaseTable$OpenCaseDetail)
 			]),
 		_List_fromArray(
 			[
@@ -5635,28 +5668,28 @@ var $author$project$Main$caseRow = function (_v0) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text(c.aM)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.au)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aA)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
 						$elm$html$Html$text(c.aN)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.av)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.aB)
+					])),
+				A2(
+				$elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(c.aO)
 					])),
 				A2(
 				$elm$html$Html$td,
@@ -5669,7 +5702,7 @@ var $author$project$Main$caseRow = function (_v0) {
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Main$sortCases = F3(
+var $author$project$CaseTable$sortCases = F3(
 	function (s, d, l1) {
 		var l2 = function () {
 			switch (s) {
@@ -5685,7 +5718,7 @@ var $author$project$Main$sortCases = F3(
 						$elm$core$List$sortBy,
 						function (n) {
 							var r = n.b;
-							return r.aM;
+							return r.aN;
 						},
 						l1);
 				case 2:
@@ -5693,7 +5726,7 @@ var $author$project$Main$sortCases = F3(
 						$elm$core$List$sortBy,
 						function (n) {
 							var r = n.b;
-							return r.au;
+							return r.av;
 						},
 						l1);
 				case 3:
@@ -5701,7 +5734,7 @@ var $author$project$Main$sortCases = F3(
 						$elm$core$List$sortBy,
 						function (n) {
 							var r = n.b;
-							return r.aA;
+							return r.aB;
 						},
 						l1);
 				default:
@@ -5709,7 +5742,7 @@ var $author$project$Main$sortCases = F3(
 						$elm$core$List$sortBy,
 						function (n) {
 							var r = n.b;
-							return r.aN;
+							return r.aO;
 						},
 						l1);
 			}
@@ -5723,7 +5756,7 @@ var $author$project$Main$sortCases = F3(
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
-var $author$project$Main$caseListView = function (model) {
+var $author$project$CaseTable$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -5747,11 +5780,11 @@ var $author$project$Main$caseListView = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										A3($author$project$Main$caseListHeader, '#', model, 0),
-										A3($author$project$Main$caseListHeader, 'Rubrum', model, 1),
-										A3($author$project$Main$caseListHeader, 'Beginn', model, 2),
-										A3($author$project$Main$caseListHeader, 'Ende', model, 3),
-										A3($author$project$Main$caseListHeader, 'Stand', model, 4),
+										A3($author$project$CaseTable$caseListHeader, '#', model, 0),
+										A3($author$project$CaseTable$caseListHeader, 'Rubrum', model, 1),
+										A3($author$project$CaseTable$caseListHeader, 'Beginn', model, 2),
+										A3($author$project$CaseTable$caseListHeader, 'Ende', model, 3),
+										A3($author$project$CaseTable$caseListHeader, 'Stand', model, 4),
 										A2(
 										$elm$html$Html$th,
 										_List_fromArray(
@@ -5769,14 +5802,20 @@ var $author$project$Main$caseListView = function (model) {
 						_List_Nil,
 						A2(
 							$elm$core$List$map,
-							$author$project$Main$caseRow,
+							$author$project$CaseTable$caseRow,
 							A3(
-								$author$project$Main$sortCases,
-								model.D,
+								$author$project$CaseTable$sortCases,
+								model.E,
 								model.v,
-								$elm$core$Dict$toList(model.I))))
+								$elm$core$Dict$toList(model.R))))
 					]))
 			]));
+};
+var $author$project$Main$caseTable = function (model) {
+	return A2(
+		$elm$html$Html$map,
+		$author$project$Main$CaseTableMsg,
+		$author$project$CaseTable$view(model.x));
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$header = _VirtualDom_node('header');
@@ -5792,8 +5831,6 @@ var $author$project$Main$NewCaseFormMsg = function (a) {
 };
 var $author$project$Main$OpenNewCaseForm = {$: 0};
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$NewCaseForm$Cancel = {$: 2};
 var $author$project$NewCaseForm$FormDataMsg = function (a) {
@@ -6114,15 +6151,15 @@ var $author$project$NewCaseForm$formfields = F2(
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2($author$project$NewCaseForm$rubrum, formData.aM, invalidFields.aM),
-					$author$project$NewCaseForm$az(formData.at),
-					$author$project$NewCaseForm$gericht(formData.aD),
-					A2($author$project$NewCaseForm$beginn, formData.au, invalidFields.au),
-					$author$project$NewCaseForm$ende(formData.aA),
-					$author$project$NewCaseForm$gegenstand(formData.aC),
-					$author$project$NewCaseForm$art(formData.as),
-					$author$project$NewCaseForm$beschreibung(formData.av),
-					A2($author$project$NewCaseForm$stand, formData.aN, invalidFields.aN)
+					A2($author$project$NewCaseForm$rubrum, formData.aN, invalidFields.aN),
+					$author$project$NewCaseForm$az(formData.au),
+					$author$project$NewCaseForm$gericht(formData.aE),
+					A2($author$project$NewCaseForm$beginn, formData.av, invalidFields.av),
+					$author$project$NewCaseForm$ende(formData.aB),
+					$author$project$NewCaseForm$gegenstand(formData.aD),
+					$author$project$NewCaseForm$art(formData.at),
+					$author$project$NewCaseForm$beschreibung(formData.aw),
+					A2($author$project$NewCaseForm$stand, formData.aO, invalidFields.aO)
 				]));
 	});
 var $elm$html$Html$hr = _VirtualDom_node('hr');
@@ -6166,7 +6203,7 @@ var $author$project$NewCaseForm$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$NewCaseForm$FormDataMsg,
-						A2($author$project$NewCaseForm$formfields, model.B, model.J)),
+						A2($author$project$NewCaseForm$formfields, model.C, model.J)),
 						$author$project$NewCaseForm$formButtons($author$project$NewCaseForm$Cancel)
 					])),
 				A2(
@@ -6255,11 +6292,11 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$text('Meine Fallliste')
 							])),
 						$author$project$Main$newCaseForm(model),
-						$author$project$Main$caseListView(model)
+						$author$project$Main$caseTable(model)
 					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
-	{aG: $author$project$Main$init, aQ: $author$project$Main$update, aR: $author$project$Main$view});
+	{aH: $author$project$Main$init, aR: $author$project$Main$update, aS: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(0))(0)}});}(this));

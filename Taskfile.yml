@@ -13,5 +13,5 @@ includes:
 
 tasks:
   default:
-    - task: server:default
     - task: client:default
+    - task: server:default
