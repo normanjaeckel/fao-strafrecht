@@ -5,6 +5,7 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (scope)
 import Html.Events exposing (onClick)
+import List exposing (sortBy)
 import Shared exposing (classes)
 
 
@@ -21,13 +22,18 @@ import Shared exposing (classes)
 -}
 type alias Model =
     { cases : Cases
-    , sortBy : SortBy
-    , sortDir : SortDir
+    , sorting : Sorting
     }
 
 
 type alias Cases =
     Dict.Dict Int Case.Model
+
+
+type alias Sorting =
+    { sortBy : SortBy
+    , sortDir : SortDir
+    }
 
 
 type SortBy
@@ -49,8 +55,7 @@ init : Model
 init =
     Model
         someDefaultCases
-        Id
-        Asc
+        (Sorting Id Asc)
 
 
 someDefaultCases : Cases
@@ -61,9 +66,12 @@ someDefaultCases =
             Case.Model "Schulze wg. Diebstahl" "000123/2020" "" "26.04.2020" "" "" Case.Verteidiger "" "laufend"
 
         c2 =
-            Case.Model "Müller M. wg Betrug u. a." "000245/2022" "" "10.10.2020" "" "" Case.Verteidiger "" "laufend"
+            Case.Model "Maller M. wg Betrug u. a." "000245/2022" "" "10.10.2020" "" "" Case.Nebenklaeger "" "laufend"
+
+        c3 =
+            Case.Model "Meier wg. Steuerhinterziehung" "000333/2022" "" "11.10.2020" "" "" Case.Verteidiger "" "laufend"
     in
-    Dict.singleton 1 c1 |> insertCase c2
+    Dict.singleton 1 c1 |> insertCase c2 |> insertCase c3
 
 
 
@@ -84,8 +92,8 @@ update msg model =
             -- TODO: Add this case here.
             model
 
-        SortCaseTable s ->
-            changeSorting model s
+        SortCaseTable innerMsg ->
+            { model | sorting = changeSorting model.sorting innerMsg }
 
 
 insertCase : Case.Model -> Cases -> Cases
@@ -103,18 +111,18 @@ insertCase e c =
     Dict.insert newId e c
 
 
-changeSorting : Model -> SortBy -> Model
-changeSorting model s =
-    if model.sortBy == s then
-        case model.sortDir of
+changeSorting : Sorting -> SortBy -> Sorting
+changeSorting sorting innerMsg =
+    if sorting.sortBy == innerMsg then
+        case sorting.sortDir of
             Asc ->
-                { model | sortDir = Desc }
+                { sorting | sortDir = Desc }
 
             Desc ->
-                { model | sortDir = Asc }
+                { sorting | sortDir = Asc }
 
     else
-        { model | sortBy = s, sortDir = Asc }
+        { sorting | sortBy = innerMsg, sortDir = Asc }
 
 
 
@@ -139,7 +147,7 @@ view model =
                     ]
                 ]
             , tbody []
-                (model.cases |> Dict.toList |> sortCases model.sortBy model.sortDir |> List.map caseRow)
+                (model.cases |> Dict.toList |> sortCases model.sorting |> List.map caseRow)
             ]
         ]
 
@@ -151,16 +159,16 @@ view model =
 caseListHeader : String -> Model -> SortBy -> Html Msg
 caseListHeader txt model sortBy =
     th [ scope "col", onClick <| SortCaseTable sortBy ]
-        [ text txt, sortArrows model.sortBy model.sortDir sortBy ]
+        [ text txt, sortArrows model.sorting sortBy ]
 
 
-sortArrows : SortBy -> SortDir -> SortBy -> Html msg
-sortArrows current dir field =
+sortArrows : Sorting -> SortBy -> Html msg
+sortArrows s field =
     let
         arrows : String
         arrows =
-            if current == field then
-                case dir of
+            if s.sortBy == field then
+                case s.sortDir of
                     Asc ->
                         "▴ ▿"
 
@@ -173,12 +181,12 @@ sortArrows current dir field =
     span [ classes "float-end pe-5 default-cursor" ] [ text arrows ]
 
 
-sortCases : SortBy -> SortDir -> List ( Int, Case.Model ) -> List ( Int, Case.Model )
-sortCases s d l1 =
+sortCases : Sorting -> List ( Int, Case.Model ) -> List ( Int, Case.Model )
+sortCases s l1 =
     let
         l2 : List ( Int, Case.Model )
         l2 =
-            case s of
+            case s.sortBy of
                 Id ->
                     List.sortBy (\n -> Tuple.first n) l1
 
@@ -226,7 +234,7 @@ sortCases s d l1 =
                         )
                         l1
     in
-    case d of
+    case s.sortDir of
         Asc ->
             l2
 
