@@ -5726,63 +5726,65 @@ var $author$project$CaseTable$caseRow = function (_v0) {
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $author$project$CaseTable$SortedCases = $elm$core$Basics$identity;
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$CaseTable$sortCases = F2(
-	function (_v0, s) {
+var $author$project$CaseTable$sortById = function (_v0) {
+	var c = _v0;
+	return A2(
+		$elm$core$List$sortBy,
+		function (n) {
+			return n.a;
+		},
+		$elm$core$Dict$toList(c));
+};
+var $author$project$CaseTable$sortByStringField = F2(
+	function (fn, _v0) {
 		var cases = _v0;
-		var l1 = $elm$core$Dict$toList(cases);
-		var l2 = function () {
-			var _v2 = s.E;
-			switch (_v2) {
+		var sortFn = function (elem) {
+			return fn(elem.b);
+		};
+		return A2(
+			$elm$core$List$sortBy,
+			sortFn,
+			$elm$core$Dict$toList(cases));
+	});
+var $author$project$CaseTable$sortCases = F2(
+	function (cases, s) {
+		var sort = function () {
+			var _v1 = s.E;
+			switch (_v1) {
 				case 0:
-					return A2(
-						$elm$core$List$sortBy,
-						function (n) {
-							return n.a;
-						},
-						l1);
+					return $author$project$CaseTable$sortById;
 				case 1:
-					return A2(
-						$elm$core$List$sortBy,
-						function (n) {
-							var c = n.b;
-							return c.aO;
-						},
-						l1);
+					return $author$project$CaseTable$sortByStringField(
+						function ($) {
+							return $.aO;
+						});
 				case 2:
-					return A2(
-						$elm$core$List$sortBy,
-						function (n) {
-							var c = n.b;
-							return c.aw;
-						},
-						l1);
+					return $author$project$CaseTable$sortByStringField(
+						function ($) {
+							return $.aw;
+						});
 				case 3:
-					return A2(
-						$elm$core$List$sortBy,
-						function (n) {
-							var c = n.b;
-							return c.aC;
-						},
-						l1);
+					return $author$project$CaseTable$sortByStringField(
+						function ($) {
+							return $.aC;
+						});
 				default:
-					return A2(
-						$elm$core$List$sortBy,
-						function (n) {
-							var c = n.b;
-							return c.aP;
-						},
-						l1);
+					return $author$project$CaseTable$sortByStringField(
+						function ($) {
+							return $.aP;
+						});
 			}
 		}();
-		var l3 = function () {
-			var _v1 = s.v;
-			if (!_v1) {
-				return l2;
+		var result = function () {
+			var _v0 = s.v;
+			if (!_v0) {
+				return sort(cases);
 			} else {
-				return $elm$core$List$reverse(l2);
+				return $elm$core$List$reverse(
+					sort(cases));
 			}
 		}();
-		return l3;
+		return result;
 	});
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');

@@ -188,72 +188,52 @@ type SortedCases
 
 
 sortCases : Cases -> Sorting -> SortedCases
-sortCases (Cases cases) s =
+sortCases cases s =
     let
-        l1 : List ( Int, Case.Model )
-        l1 =
-            Dict.toList cases
-
-        l2 : List ( Int, Case.Model )
-        l2 =
+        sort : Cases -> List ( Int, Case.Model )
+        sort =
             case s.sortBy of
                 Id ->
-                    List.sortBy (\n -> Tuple.first n) l1
+                    sortById
 
                 Rubrum ->
-                    List.sortBy
-                        (\n ->
-                            let
-                                c =
-                                    Tuple.second n
-                            in
-                            c.rubrum
-                        )
-                        l1
+                    sortByStringField .rubrum
 
                 Beginn ->
-                    List.sortBy
-                        (\n ->
-                            let
-                                c =
-                                    Tuple.second n
-                            in
-                            c.beginn
-                        )
-                        l1
+                    sortByStringField .beginn
 
                 Ende ->
-                    List.sortBy
-                        (\n ->
-                            let
-                                c =
-                                    Tuple.second n
-                            in
-                            c.ende
-                        )
-                        l1
+                    sortByStringField .ende
 
                 Stand ->
-                    List.sortBy
-                        (\n ->
-                            let
-                                c =
-                                    Tuple.second n
-                            in
-                            c.stand
-                        )
-                        l1
+                    sortByStringField .stand
 
-        l3 : List ( Int, Case.Model )
-        l3 =
+        result : List ( Int, Case.Model )
+        result =
             case s.sortDir of
                 Asc ->
-                    l2
+                    sort cases
 
                 Desc ->
-                    List.reverse l2
+                    List.reverse (sort cases)
     in
-    SortedCases l3
+    SortedCases result
+
+
+sortById : Cases -> List ( Int, Case.Model )
+sortById (Cases c) =
+    c |> Dict.toList |> List.sortBy (\n -> Tuple.first n)
+
+
+sortByStringField : (Case.Model -> String) -> Cases -> List ( Int, Case.Model )
+sortByStringField fn (Cases cases) =
+    let
+        sortFn : ( Int, Case.Model ) -> String
+        sortFn =
+            \elem ->
+                Tuple.second elem |> fn
+    in
+    Dict.toList cases |> List.sortBy sortFn
 
 
 caseRow : SortedCases -> List (Html Msg)
