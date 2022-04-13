@@ -26,8 +26,8 @@ type alias Model =
     }
 
 
-type alias Cases =
-    Dict.Dict Int Case.Model
+type Cases
+    = Cases (Dict.Dict Int Case.Model)
 
 
 type alias Sorting =
@@ -71,7 +71,9 @@ someDefaultCases =
         c3 =
             Case.Model "Meier wg. Steuerhinterziehung" "000333/2022" "" "11.10.2020" "" "" Case.Verteidiger "" "laufend"
     in
-    Dict.singleton 1 c1 |> insertCase c2 |> insertCase c3
+    Cases (Dict.singleton 1 c1)
+        |> insertCase c2
+        |> insertCase c3
 
 
 
@@ -97,7 +99,7 @@ update msg model =
 
 
 insertCase : Case.Model -> Cases -> Cases
-insertCase e c =
+insertCase e (Cases c) =
     let
         newId : Int
         newId =
@@ -108,7 +110,7 @@ insertCase e c =
                 Just max ->
                     max + 1
     in
-    Dict.insert newId e c
+    Dict.insert newId e c |> Cases
 
 
 changeSorting : Sorting -> SortBy -> Sorting
@@ -147,7 +149,7 @@ view model =
                     ]
                 ]
             , tbody []
-                (model.cases |> Dict.toList |> sortCases model.sorting |> List.map caseRow)
+                (sortCases model.cases model.sorting |> caseRow)
             ]
         ]
 
@@ -181,9 +183,17 @@ sortArrows s field =
     span [ classes "float-end pe-5 default-cursor" ] [ text arrows ]
 
 
-sortCases : Sorting -> List ( Int, Case.Model ) -> List ( Int, Case.Model )
-sortCases s l1 =
+type SortedCases
+    = SortedCases (List ( Int, Case.Model ))
+
+
+sortCases : Cases -> Sorting -> SortedCases
+sortCases (Cases cases) s =
     let
+        l1 : List ( Int, Case.Model )
+        l1 =
+            Dict.toList cases
+
         l2 : List ( Int, Case.Model )
         l2 =
             case s.sortBy of
@@ -194,10 +204,10 @@ sortCases s l1 =
                     List.sortBy
                         (\n ->
                             let
-                                r =
+                                c =
                                     Tuple.second n
                             in
-                            r.rubrum
+                            c.rubrum
                         )
                         l1
 
@@ -205,10 +215,10 @@ sortCases s l1 =
                     List.sortBy
                         (\n ->
                             let
-                                r =
+                                c =
                                     Tuple.second n
                             in
-                            r.beginn
+                            c.beginn
                         )
                         l1
 
@@ -216,10 +226,10 @@ sortCases s l1 =
                     List.sortBy
                         (\n ->
                             let
-                                r =
+                                c =
                                     Tuple.second n
                             in
-                            r.ende
+                            c.ende
                         )
                         l1
 
@@ -227,34 +237,53 @@ sortCases s l1 =
                     List.sortBy
                         (\n ->
                             let
-                                r =
+                                c =
                                     Tuple.second n
                             in
-                            r.stand
+                            c.stand
                         )
                         l1
+
+        l3 : List ( Int, Case.Model )
+        l3 =
+            case s.sortDir of
+                Asc ->
+                    l2
+
+                Desc ->
+                    List.reverse l2
     in
-    case s.sortDir of
-        Asc ->
-            l2
-
-        Desc ->
-            List.reverse l2
+    SortedCases l3
 
 
-caseRow : ( Int, Case.Model ) -> Html Msg
-caseRow ( id, c ) =
-    tr [ onClick OpenCaseDetail ]
-        [ th [ scope "row" ]
-            [ text <| String.fromInt id ]
-        , td []
-            [ text c.rubrum ]
-        , td []
-            [ text c.beginn ]
-        , td []
-            [ text c.ende ]
-        , td []
-            [ text c.stand ]
-        , td []
-            [ text "" ]
-        ]
+caseRow : SortedCases -> List (Html Msg)
+caseRow (SortedCases s) =
+    let
+        fn : ( Int, Case.Model ) -> Html Msg
+        fn =
+            \elem ->
+                let
+                    id : Int
+                    id =
+                        Tuple.first elem
+
+                    c : Case.Model
+                    c =
+                        Tuple.second elem
+                in
+                tr [ onClick OpenCaseDetail ]
+                    [ th [ scope "row" ]
+                        [ text <| String.fromInt id ]
+                    , td []
+                        [ text c.rubrum ]
+                    , td []
+                        [ text c.beginn ]
+                    , td []
+                        [ text c.ende ]
+                    , td []
+                        [ text c.stand ]
+                    , td []
+                        [ text "" ]
+                    ]
+    in
+    List.map fn s

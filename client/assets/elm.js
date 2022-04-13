@@ -4370,6 +4370,10 @@ var $author$project$CaseTable$Sorting = F2(
 	function (sortBy, sortDir) {
 		return {E: sortBy, v: sortDir};
 	});
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
+var $author$project$CaseTable$Cases = $elm$core$Basics$identity;
 var $author$project$Case$Model = F9(
 	function (rubrum, az, gericht, beginn, ende, gegenstand, art, beschreibung, stand) {
 		return {au: art, av: az, aw: beginn, ax: beschreibung, aC: ende, aE: gegenstand, aF: gericht, aO: rubrum, aP: stand};
@@ -4609,14 +4613,15 @@ var $elm$core$List$maximum = function (list) {
 	}
 };
 var $author$project$CaseTable$insertCase = F2(
-	function (e, c) {
+	function (e, _v0) {
+		var c = _v0;
 		var newId = function () {
-			var _v0 = $elm$core$List$maximum(
+			var _v1 = $elm$core$List$maximum(
 				$elm$core$Dict$keys(c));
-			if (_v0.$ === 1) {
+			if (_v1.$ === 1) {
 				return 1;
 			} else {
-				var max = _v0.a;
+				var max = _v1.a;
 				return max + 1;
 			}
 		}();
@@ -5025,9 +5030,6 @@ var $elm$browser$Browser$External = function (a) {
 };
 var $elm$browser$Browser$Internal = function (a) {
 	return {$: 0, a: a};
-};
-var $elm$core$Basics$identity = function (x) {
-	return x;
 };
 var $elm$browser$Browser$Dom$NotFound = $elm$core$Basics$identity;
 var $elm$url$Url$Http = 0;
@@ -5659,71 +5661,78 @@ var $author$project$CaseTable$OpenCaseDetail = {$: 0};
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
 var $author$project$CaseTable$caseRow = function (_v0) {
-	var id = _v0.a;
-	var c = _v0.b;
-	return A2(
-		$elm$html$Html$tr,
-		_List_fromArray(
-			[
-				$elm$html$Html$Events$onClick($author$project$CaseTable$OpenCaseDetail)
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$th,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$scope('row')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$elm$core$String$fromInt(id))
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aO)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aw)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aC)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(c.aP)
-					])),
-				A2(
-				$elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('')
-					]))
-			]));
+	var s = _v0;
+	var fn = function (elem) {
+		var id = elem.a;
+		var c = elem.b;
+		return A2(
+			$elm$html$Html$tr,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$CaseTable$OpenCaseDetail)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$th,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$scope('row')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(id))
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(c.aO)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(c.aw)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(c.aC)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(c.aP)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('')
+						]))
+				]));
+	};
+	return A2($elm$core$List$map, fn, s);
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$CaseTable$SortedCases = $elm$core$Basics$identity;
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$CaseTable$sortCases = F2(
-	function (s, l1) {
+	function (_v0, s) {
+		var cases = _v0;
+		var l1 = $elm$core$Dict$toList(cases);
 		var l2 = function () {
-			var _v1 = s.E;
-			switch (_v1) {
+			var _v2 = s.E;
+			switch (_v2) {
 				case 0:
 					return A2(
 						$elm$core$List$sortBy,
@@ -5735,42 +5744,45 @@ var $author$project$CaseTable$sortCases = F2(
 					return A2(
 						$elm$core$List$sortBy,
 						function (n) {
-							var r = n.b;
-							return r.aO;
+							var c = n.b;
+							return c.aO;
 						},
 						l1);
 				case 2:
 					return A2(
 						$elm$core$List$sortBy,
 						function (n) {
-							var r = n.b;
-							return r.aw;
+							var c = n.b;
+							return c.aw;
 						},
 						l1);
 				case 3:
 					return A2(
 						$elm$core$List$sortBy,
 						function (n) {
-							var r = n.b;
-							return r.aC;
+							var c = n.b;
+							return c.aC;
 						},
 						l1);
 				default:
 					return A2(
 						$elm$core$List$sortBy,
 						function (n) {
-							var r = n.b;
-							return r.aP;
+							var c = n.b;
+							return c.aP;
 						},
 						l1);
 			}
 		}();
-		var _v0 = s.v;
-		if (!_v0) {
-			return l2;
-		} else {
-			return $elm$core$List$reverse(l2);
-		}
+		var l3 = function () {
+			var _v1 = s.v;
+			if (!_v1) {
+				return l2;
+			} else {
+				return $elm$core$List$reverse(l2);
+			}
+		}();
+		return l3;
 	});
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
@@ -5819,13 +5831,8 @@ var $author$project$CaseTable$view = function (model) {
 						A2(
 						$elm$html$Html$tbody,
 						_List_Nil,
-						A2(
-							$elm$core$List$map,
-							$author$project$CaseTable$caseRow,
-							A2(
-								$author$project$CaseTable$sortCases,
-								model.F,
-								$elm$core$Dict$toList(model.S))))
+						$author$project$CaseTable$caseRow(
+							A2($author$project$CaseTable$sortCases, model.S, model.F)))
 					]))
 			]));
 };
