@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.P.D === region.V.D)
+	if (region.Q.E === region.V.E)
 	{
-		return 'on line ' + region.P.D;
+		return 'on line ' + region.Q.E;
 	}
-	return 'on lines ' + region.P.D + ' through ' + region.V.D;
+	return 'on lines ' + region.Q.E + ' through ' + region.V.E;
 }
 
 
@@ -2705,8 +2705,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		o: func(record.o),
-		Q: record.Q,
-		N: record.N
+		R: record.R,
+		O: record.O
 	}
 });
 
@@ -2975,10 +2975,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.o;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.Q;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.R;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.N) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.O) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3968,7 +3968,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.aS,
 		impl.aQ,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.O && impl.O(sendToApp)
+			var divertHrefToApp = impl.P && impl.P(sendToApp)
 			var view = impl.aT;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4043,7 +4043,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		O: function(sendToApp)
+		P: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4364,16 +4364,20 @@ var $author$project$CaseTable$Asc = 0;
 var $author$project$CaseTable$Id = 0;
 var $author$project$CaseTable$Model = F2(
 	function (cases, sorting) {
-		return {S: cases, F: sorting};
+		return {C: cases, G: sorting};
 	});
 var $author$project$CaseTable$Sorting = F2(
 	function (sortBy, sortDir) {
-		return {E: sortBy, v: sortDir};
+		return {F: sortBy, v: sortDir};
+	});
+var $author$project$CaseTable$Cases = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
 	});
 var $elm$core$Basics$identity = function (x) {
 	return x;
 };
-var $author$project$CaseTable$Cases = $elm$core$Basics$identity;
+var $author$project$CaseTable$Expanded = $elm$core$Basics$identity;
 var $author$project$Case$Model = F9(
 	function (rubrum, az, gericht, beginn, ende, gegenstand, art, beschreibung, stand) {
 		return {au: art, av: az, aw: beginn, ax: beschreibung, aC: ende, aE: gegenstand, aF: gericht, aO: rubrum, aP: stand};
@@ -4614,7 +4618,8 @@ var $elm$core$List$maximum = function (list) {
 };
 var $author$project$CaseTable$insertCase = F2(
 	function (e, _v0) {
-		var c = _v0;
+		var c = _v0.a;
+		var exp = _v0.b;
 		var newId = function () {
 			var _v1 = $elm$core$List$maximum(
 				$elm$core$Dict$keys(c));
@@ -4625,7 +4630,10 @@ var $author$project$CaseTable$insertCase = F2(
 				return max + 1;
 			}
 		}();
-		return A3($elm$core$Dict$insert, newId, e, c);
+		return A2(
+			$author$project$CaseTable$Cases,
+			A3($elm$core$Dict$insert, newId, e, c),
+			exp);
 	});
 var $elm$core$Dict$singleton = F2(
 	function (key, value) {
@@ -4641,7 +4649,10 @@ var $author$project$CaseTable$someDefaultCases = function () {
 		A2(
 			$author$project$CaseTable$insertCase,
 			c2,
-			A2($elm$core$Dict$singleton, 1, c1)));
+			A2(
+				$author$project$CaseTable$Cases,
+				A2($elm$core$Dict$singleton, 1, c1),
+				$elm$core$Maybe$Nothing)));
 }();
 var $author$project$CaseTable$init = A2(
 	$author$project$CaseTable$Model,
@@ -5339,7 +5350,7 @@ var $elm$browser$Browser$sandbox = function (impl) {
 var $author$project$CaseTable$Desc = 1;
 var $author$project$CaseTable$changeSorting = F2(
 	function (sorting, innerMsg) {
-		if (_Utils_eq(sorting.E, innerMsg)) {
+		if (_Utils_eq(sorting.F, innerMsg)) {
 			var _v0 = sorting.v;
 			if (!_v0) {
 				return _Utils_update(
@@ -5353,19 +5364,55 @@ var $author$project$CaseTable$changeSorting = F2(
 		} else {
 			return _Utils_update(
 				sorting,
-				{E: innerMsg, v: 0});
+				{F: innerMsg, v: 0});
 		}
 	});
+var $author$project$CaseTable$changedDetail = F2(
+	function (_v0, id) {
+		var c = _v0.a;
+		var exp = _v0.b;
+		var value = function () {
+			if (exp.$ === 1) {
+				return id;
+			} else {
+				var currentId = exp.a;
+				if (id.$ === 1) {
+					return id;
+				} else {
+					var i = id.a;
+					return _Utils_eq(currentId, i) ? $elm$core$Maybe$Nothing : id;
+				}
+			}
+		}();
+		return A2($author$project$CaseTable$Cases, c, value);
+	});
+var $author$project$CaseTable$getExp = function (_v0) {
+	var exp = _v0.b;
+	return exp;
+};
+var $author$project$CaseTable$isExpanded = function (c) {
+	var _v0 = $author$project$CaseTable$getExp(c);
+	if (!_v0.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $author$project$CaseTable$update = F2(
 	function (msg, model) {
 		if (!msg.$) {
-			return model;
-		} else {
 			var innerMsg = msg.a;
 			return _Utils_update(
 				model,
 				{
-					F: A2($author$project$CaseTable$changeSorting, model.F, innerMsg)
+					C: A2($author$project$CaseTable$changedDetail, model.C, innerMsg)
+				});
+		} else {
+			var innerMsg = msg.a;
+			return $author$project$CaseTable$isExpanded(model.C) ? model : _Utils_update(
+				model,
+				{
+					G: A2($author$project$CaseTable$changeSorting, model.G, innerMsg)
 				});
 		}
 	});
@@ -5382,7 +5429,7 @@ var $author$project$Main$insertCaseToTable = F2(
 		return _Utils_update(
 			m,
 			{
-				S: A2($author$project$CaseTable$insertCase, e, m.S)
+				C: A2($author$project$CaseTable$insertCase, e, m.C)
 			});
 	});
 var $author$project$NewCaseForm$Canceled = {$: 0};
@@ -5403,13 +5450,13 @@ var $author$project$NewCaseForm$formValidate = function (f) {
 	return A3($author$project$NewCaseForm$InvalidFields, f.aO === '', f.aw === '', f.aP === '');
 };
 var $author$project$NewCaseForm$save = function (model) {
-	var f = model.C;
+	var f = model.D;
 	var v = $author$project$NewCaseForm$formValidate(f);
 	if ($author$project$NewCaseForm$formIsInvalid(v)) {
 		return $author$project$NewCaseForm$Updated(
 			_Utils_update(
 				model,
-				{K: v}));
+				{L: v}));
 	} else {
 		var c = A9($author$project$Case$Model, f.aO, f.av, f.aF, f.aw, f.aC, f.aE, f.au, f.ax, f.aP);
 		return $author$project$NewCaseForm$Saved(c);
@@ -5474,7 +5521,7 @@ var $author$project$NewCaseForm$update = F2(
 					_Utils_update(
 						model,
 						{
-							C: A2($author$project$NewCaseForm$updateFormData, m, model.C)
+							D: A2($author$project$NewCaseForm$updateFormData, m, model.D)
 						}));
 			case 1:
 				return $author$project$NewCaseForm$save(model);
@@ -5515,7 +5562,7 @@ var $author$project$Main$handleNewCaseFormMsg = F2(
 	});
 var $author$project$NewCaseForm$Model = F2(
 	function (formData, invalidFields) {
-		return {C: formData, K: invalidFields};
+		return {D: formData, L: invalidFields};
 	});
 var $author$project$Case$defaultArt = 0;
 var $author$project$NewCaseForm$defaultFormData = {au: $author$project$Case$defaultArt, av: '', aw: '', ax: '', aC: '', aE: '', aF: '', aO: '', aP: 'laufend'};
@@ -5548,7 +5595,7 @@ var $author$project$CaseTable$Beginn = 2;
 var $author$project$CaseTable$Ende = 3;
 var $author$project$CaseTable$Rubrum = 1;
 var $author$project$CaseTable$Stand = 4;
-var $author$project$CaseTable$SortCaseTable = function (a) {
+var $author$project$CaseTable$SortCases = function (a) {
 	return {$: 1, a: a};
 };
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -5618,7 +5665,7 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$CaseTable$sortArrows = F2(
 	function (s, field) {
 		var arrows = function () {
-			if (_Utils_eq(s.E, field)) {
+			if (_Utils_eq(s.F, field)) {
 				var _v0 = s.v;
 				if (!_v0) {
 					return '▴ ▿';
@@ -5649,27 +5696,43 @@ var $author$project$CaseTable$caseListHeader = F3(
 				[
 					$elm$html$Html$Attributes$scope('col'),
 					$elm$html$Html$Events$onClick(
-					$author$project$CaseTable$SortCaseTable(sortBy))
+					$author$project$CaseTable$SortCases(sortBy))
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text(txt),
-					A2($author$project$CaseTable$sortArrows, model.F, sortBy)
+					A2($author$project$CaseTable$sortArrows, model.G, sortBy)
 				]));
 	});
-var $author$project$CaseTable$OpenCaseDetail = {$: 0};
+var $author$project$CaseTable$OpenCaseDetail = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$CaseTable$caseForm = F2(
+	function (_v0, _v1) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$CaseTable$OpenCaseDetail($elm$core$Maybe$Nothing))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Byebye')
+				]));
+	});
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$CaseTable$caseRow = function (_v0) {
-	var s = _v0;
-	var fn = function (elem) {
-		var id = elem.a;
-		var c = elem.b;
+var $author$project$CaseTable$caseLine = F2(
+	function (id, c) {
 		return A2(
 			$elm$html$Html$tr,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick($author$project$CaseTable$OpenCaseDetail)
+					$elm$html$Html$Events$onClick(
+					$author$project$CaseTable$OpenCaseDetail(
+						$elm$core$Maybe$Just(id)))
 				]),
 			_List_fromArray(
 				[
@@ -5720,14 +5783,35 @@ var $author$project$CaseTable$caseRow = function (_v0) {
 							$elm$html$Html$text('')
 						]))
 				]));
-	};
-	return A2($elm$core$List$map, fn, s);
+	});
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$CaseTable$caseRow = F2(
+	function (_v0, t) {
+		var exp = _v0;
+		var id = t.a;
+		var c = t.b;
+		if (exp.$ === 1) {
+			return A2($author$project$CaseTable$caseLine, id, c);
+		} else {
+			var i = exp.a;
+			return (!_Utils_eq(i, id)) ? A2($author$project$CaseTable$caseLine, id, c) : A2($author$project$CaseTable$caseForm, id, c);
+		}
+	});
+var $author$project$CaseTable$caseRows = function (_v0) {
+	var s = _v0.a;
+	var exp = _v0.b;
+	return A2(
+		$elm$core$List$map,
+		$author$project$CaseTable$caseRow(exp),
+		s);
 };
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$CaseTable$SortedCases = $elm$core$Basics$identity;
+var $author$project$CaseTable$SortedCases = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$CaseTable$sortById = function (_v0) {
-	var c = _v0;
+	var c = _v0.a;
 	return A2(
 		$elm$core$List$sortBy,
 		function (n) {
@@ -5737,7 +5821,7 @@ var $author$project$CaseTable$sortById = function (_v0) {
 };
 var $author$project$CaseTable$sortByStringField = F2(
 	function (fn, _v0) {
-		var cases = _v0;
+		var cases = _v0.a;
 		var sortFn = function (elem) {
 			return fn(elem.b);
 		};
@@ -5749,7 +5833,7 @@ var $author$project$CaseTable$sortByStringField = F2(
 var $author$project$CaseTable$sortCases = F2(
 	function (cases, s) {
 		var sort = function () {
-			var _v1 = s.E;
+			var _v1 = s.F;
 			switch (_v1) {
 				case 0:
 					return $author$project$CaseTable$sortById;
@@ -5784,7 +5868,10 @@ var $author$project$CaseTable$sortCases = F2(
 					sort(cases));
 			}
 		}();
-		return result;
+		return A2(
+			$author$project$CaseTable$SortedCases,
+			result,
+			$author$project$CaseTable$getExp(cases));
 	});
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
@@ -5833,8 +5920,8 @@ var $author$project$CaseTable$view = function (model) {
 						A2(
 						$elm$html$Html$tbody,
 						_List_Nil,
-						$author$project$CaseTable$caseRow(
-							A2($author$project$CaseTable$sortCases, model.S, model.F)))
+						$author$project$CaseTable$caseRows(
+							A2($author$project$CaseTable$sortCases, model.C, model.G)))
 					]))
 			]));
 };
@@ -6229,7 +6316,7 @@ var $author$project$NewCaseForm$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$NewCaseForm$FormDataMsg,
-						A2($author$project$NewCaseForm$formfields, model.C, model.K)),
+						A2($author$project$NewCaseForm$formfields, model.D, model.L)),
 						$author$project$NewCaseForm$formButtons($author$project$NewCaseForm$Cancel)
 					])),
 				A2(

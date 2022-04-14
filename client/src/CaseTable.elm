@@ -27,7 +27,26 @@ type alias Model =
 
 
 type Cases
-    = Cases (Dict.Dict Int Case.Model)
+    = Cases (Dict.Dict Int Case.Model) Expanded
+
+
+type Expanded
+    = Expanded (Maybe Int)
+
+
+getExp : Cases -> Maybe Int
+getExp (Cases _ (Expanded exp)) =
+    exp
+
+
+isExpanded : Cases -> Bool
+isExpanded c =
+    case getExp c of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
 
 
 type alias Sorting =
@@ -71,7 +90,7 @@ someDefaultCases =
         c3 =
             Case.Model "Meier wg. Steuerhinterziehung" "000333/2022" "" "11.10.2020" "" "" Case.Verteidiger "" "laufend"
     in
-    Cases (Dict.singleton 1 c1)
+    Cases (Dict.singleton 1 c1) (Expanded Nothing)
         |> insertCase c2
         |> insertCase c3
 
@@ -81,8 +100,8 @@ someDefaultCases =
 
 
 type Msg
-    = OpenCaseDetail
-    | SortCaseTable SortBy
+    = OpenCaseDetail (Maybe Int)
+    | SortCases SortBy
 
 
 {-| Processes the messages of this module.
@@ -90,16 +109,19 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        OpenCaseDetail ->
-            -- TODO: Add this case here.
-            model
+        OpenCaseDetail innerMsg ->
+            { model | cases = changedDetail model.cases innerMsg }
 
-        SortCaseTable innerMsg ->
-            { model | sorting = changeSorting model.sorting innerMsg }
+        SortCases innerMsg ->
+            if isExpanded model.cases then
+                model
+
+            else
+                { model | sorting = changeSorting model.sorting innerMsg }
 
 
 insertCase : Case.Model -> Cases -> Cases
-insertCase e (Cases c) =
+insertCase e (Cases c exp) =
     let
         newId : Int
         newId =
@@ -110,7 +132,9 @@ insertCase e (Cases c) =
                 Just max ->
                     max + 1
     in
-    Dict.insert newId e c |> Cases
+    Cases
+        (Dict.insert newId e c)
+        exp
 
 
 changeSorting : Sorting -> SortBy -> Sorting
@@ -125,6 +149,35 @@ changeSorting sorting innerMsg =
 
     else
         { sorting | sortBy = innerMsg, sortDir = Asc }
+
+
+changedDetail : Cases -> Maybe Int -> Cases
+changedDetail (Cases c (Expanded exp)) id =
+    -- We have five cases. Test them.
+    -- N N -> N
+    -- N 42 -> 42
+    -- 10 N -> 10
+    -- 10 10 -> N
+    -- 10 42 -> 42
+    let
+        value =
+            case exp of
+                Nothing ->
+                    id
+
+                Just currentId ->
+                    case id of
+                        Nothing ->
+                            id
+
+                        Just i ->
+                            if currentId == i then
+                                Nothing
+
+                            else
+                                id
+    in
+    value |> Expanded |> Cases c
 
 
 
@@ -149,7 +202,7 @@ view model =
                     ]
                 ]
             , tbody []
-                (sortCases model.cases model.sorting |> caseRow)
+                (sortCases model.cases model.sorting |> caseRows)
             ]
         ]
 
@@ -160,7 +213,7 @@ view model =
 
 caseListHeader : String -> Model -> SortBy -> Html Msg
 caseListHeader txt model sortBy =
-    th [ scope "col", onClick <| SortCaseTable sortBy ]
+    th [ scope "col", onClick <| SortCases sortBy ]
         [ text txt, sortArrows model.sorting sortBy ]
 
 
@@ -184,7 +237,7 @@ sortArrows s field =
 
 
 type SortedCases
-    = SortedCases (List ( Int, Case.Model ))
+    = SortedCases (List ( Int, Case.Model )) Expanded
 
 
 sortCases : Cases -> Sorting -> SortedCases
@@ -217,16 +270,16 @@ sortCases cases s =
                 Desc ->
                     List.reverse (sort cases)
     in
-    SortedCases result
+    SortedCases result <| Expanded <| getExp cases
 
 
 sortById : Cases -> List ( Int, Case.Model )
-sortById (Cases c) =
+sortById (Cases c _) =
     c |> Dict.toList |> List.sortBy (\n -> Tuple.first n)
 
 
 sortByStringField : (Case.Model -> String) -> Cases -> List ( Int, Case.Model )
-sortByStringField fn (Cases cases) =
+sortByStringField fn (Cases cases _) =
     let
         sortFn : ( Int, Case.Model ) -> String
         sortFn =
@@ -236,34 +289,53 @@ sortByStringField fn (Cases cases) =
     Dict.toList cases |> List.sortBy sortFn
 
 
-caseRow : SortedCases -> List (Html Msg)
-caseRow (SortedCases s) =
-    let
-        fn : ( Int, Case.Model ) -> Html Msg
-        fn =
-            \elem ->
-                let
-                    id : Int
-                    id =
-                        Tuple.first elem
+caseRows : SortedCases -> List (Html Msg)
+caseRows (SortedCases s exp) =
+    List.map (caseRow exp) <| s
 
-                    c : Case.Model
-                    c =
-                        Tuple.second elem
-                in
-                tr [ onClick OpenCaseDetail ]
-                    [ th [ scope "row" ]
-                        [ text <| String.fromInt id ]
-                    , td []
-                        [ text c.rubrum ]
-                    , td []
-                        [ text c.beginn ]
-                    , td []
-                        [ text c.ende ]
-                    , td []
-                        [ text c.stand ]
-                    , td []
-                        [ text "" ]
-                    ]
+
+caseRow : Expanded -> ( Int, Case.Model ) -> Html Msg
+caseRow (Expanded exp) t =
+    let
+        id : Int
+        id =
+            Tuple.first t
+
+        c : Case.Model
+        c =
+            Tuple.second t
     in
-    List.map fn s
+    case exp of
+        Nothing ->
+            caseLine id c
+
+        Just i ->
+            if i /= id then
+                caseLine id c
+
+            else
+                caseForm id c
+
+
+caseLine : Int -> Case.Model -> Html Msg
+caseLine id c =
+    tr [ onClick <| OpenCaseDetail <| Just id ]
+        [ th [ scope "row" ]
+            [ text <| String.fromInt id ]
+        , td []
+            [ text c.rubrum ]
+        , td []
+            [ text c.beginn ]
+        , td []
+            [ text c.ende ]
+        , td []
+            [ text c.stand ]
+        , td []
+            [ text "" ]
+        ]
+
+
+caseForm : Int -> Case.Model -> Html Msg
+caseForm _ _ =
+    div [ onClick <| OpenCaseDetail <| Nothing ]
+        [ text "Byebye" ]
