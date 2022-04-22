@@ -18,7 +18,7 @@ import (
 
 // Run is the entry point for this module. It does some preparation and then
 // starts the server.
-func Run(logger deps.Logger, getEnvFunc deps.GetEnvFunc) error {
+func Run(logger deps.Logger, db deps.DB, getEnvFunc deps.GetEnvFunc) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -33,7 +33,7 @@ func Run(logger deps.Logger, getEnvFunc deps.GetEnvFunc) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", e.Host, e.Port)
-	if err := Start(ctx, logger, addr); err != nil {
+	if err := Start(ctx, logger, db, addr); err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func Handler() http.Handler {
 
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
-func Start(ctx context.Context, logger deps.Logger, addr string) error {
+func Start(ctx context.Context, logger deps.Logger, db deps.DB, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
 		Handler: Handler(),
