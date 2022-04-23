@@ -2,9 +2,12 @@ package db_test
 
 import (
 	"encoding/json"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/db"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
 )
 
 type SomeData struct {
@@ -13,7 +16,16 @@ type SomeData struct {
 }
 
 func TestDB(t *testing.T) {
-	db := db.New()
+	f, err := os.CreateTemp("", "db-*.jsonl")
+	if err != nil {
+		t.Fatalf("creating tmp file: %v", err)
+	}
+	defer f.Close()
+
+	db, err := db.New(f)
+	if err != nil {
+		t.Fatalf("loading db: %v", err)
+	}
 	name := "my collection"
 	firstData := SomeData{
 		Foo: "foo",
@@ -81,7 +93,50 @@ func TestDB(t *testing.T) {
 	})
 }
 
-func insert(t testing.TB, db *db.JSONLineDB, name string, data interface{}) int {
+func TestDBPersistence(t *testing.T) {
+	dir, err := os.MkdirTemp("", "fao-strafrecht-*")
+	if err != nil {
+		t.Fatalf("creating tmp directors: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	name := "my collection"
+	data := SomeData{
+		Foo: "foo1\nfoo2",
+		Bar: "bar",
+	}
+	p := path.Join(dir, "db.jsonl")
+
+	f1, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_EXCL|os.O_RDWR, 0644)
+	if err != nil {
+		t.Fatalf("opening database file: %v", err)
+	}
+	defer f1.Close()
+	db1, err := db.New(f1)
+	if err != nil {
+		t.Fatalf("loading db: %v", err)
+	}
+	insert(t, db1, name, data)
+	f1.Close()
+
+	f2, err := os.OpenFile(p, os.O_APPEND|os.O_RDWR, 0644)
+	if err != nil {
+		t.Fatalf("opening database file: %v", err)
+	}
+	defer f2.Close()
+	db2, err := db.New(f2)
+	if err != nil {
+		t.Fatalf("loading db: %v", err)
+	}
+	result := SomeData{}
+	retrieve(t, db2, name, 1, &result)
+
+	if data != result {
+		t.Fatalf("wrong retrieved data, expected %v, got %v", data, result)
+	}
+}
+
+func insert(t testing.TB, db deps.Database, name string, data interface{}) int {
 	t.Helper()
 	encodedData, err := json.Marshal(data)
 	if err != nil {
@@ -94,7 +149,7 @@ func insert(t testing.TB, db *db.JSONLineDB, name string, data interface{}) int 
 	return id
 }
 
-func retrieve(t testing.TB, db *db.JSONLineDB, name string, id int, v interface{}) {
+func retrieve(t testing.TB, db deps.Database, name string, id int, v interface{}) {
 	t.Helper()
 	result, err := db.Retrieve(name, id)
 	if err != nil {
@@ -106,7 +161,7 @@ func retrieve(t testing.TB, db *db.JSONLineDB, name string, id int, v interface{
 	}
 }
 
-func update(t testing.TB, db *db.JSONLineDB, name string, id int, data interface{}) {
+func update(t testing.TB, db deps.Database, name string, id int, data interface{}) {
 	t.Helper()
 	encodedData, err := json.Marshal(data)
 	if err != nil {

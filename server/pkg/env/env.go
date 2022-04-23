@@ -4,52 +4,72 @@ These are:
 
   FAO_STRAFRECHT_HOST
   FAO_STRAFRECHT_PORT
+  FAO_STRAFRECHT_DBFILENAME
 */
 package env
 
 import (
 	"fmt"
 	"strconv"
+)
 
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
+const (
+	DefaultHost        = ""
+	DefaultPort        = "8000"
+	DefaultDBFilenname = "db.jsonl"
 )
 
 // Environment provides all environment variables that are used in this module.
 type Environment struct {
-	Host string
-	Port int
+	vars map[string]string
+}
+
+func (e Environment) Host() string {
+	return e.vars["FAO_STRAFRECHT_HOST"]
+}
+
+func (e Environment) Port() string {
+	return e.vars["FAO_STRAFRECHT_PORT"]
+}
+
+func (e Environment) DBFilename() string {
+	return e.vars["FAO_STRAFRECHT_DBFILENAME"]
 }
 
 // Parse creates the Environment struct with all environment variables retrieved
 // from the given function or with default value.
-func Parse(fn deps.GetEnvFunc) (Environment, error) {
-	f := envOrDefault(fn)
-	e := Environment{}
-
-	// FAO_STRAFRECHT_HOST
-	e.Host = f("FAO_STRAFRECHT_HOST", "")
-
-	// FAO_STRAFRECHT_PORT
-	port := f("FAO_STRAFRECHT_PORT", "8000")
-	portInt, err := strconv.Atoi(port)
-	if err != nil {
-		return Environment{}, fmt.Errorf("invalid environment variable FAO_STRAFRECHT_PORT, it should be an integer, got %q", port)
+func Parse(fn func(key string) string) (Environment, error) {
+	e := Environment{
+		vars: map[string]string{
+			"FAO_STRAFRECHT_HOST":       DefaultHost,
+			"FAO_STRAFRECHT_PORT":       DefaultPort,
+			"FAO_STRAFRECHT_DBFILENAME": DefaultDBFilenname,
+		},
 	}
-	if portInt <= 0 {
-		return Environment{}, fmt.Errorf("invalid environment variable FAO_STRAFRECHT_PORT, it should be positiv, got %d", portInt)
+
+	for k := range e.vars {
+		value := fn(k)
+		if value != "" {
+			e.vars[k] = value
+		}
 	}
-	e.Port = portInt
+
+	if err := validatePort(e.Port()); err != nil {
+		return Environment{}, fmt.Errorf("invalid environment variable FAO_STRAFRECHT_PORT: %w", err)
+	}
+
+	// TODO: Validate FAO_STRAFRECHT_DBFILENAME: https://stackoverflow.com/questions/35231846/golang-check-if-string-is-valid-path
 
 	return e, nil
 }
 
-func envOrDefault(fn deps.GetEnvFunc) func(key string, defaultValue string) string {
-	f := func(key string, defaultValue string) string {
-		v := fn(key)
-		if v == "" {
-			return defaultValue
-		}
-		return v
+func validatePort(p string) error {
+	portInt, err := strconv.Atoi(p)
+	if err != nil {
+		return fmt.Errorf("port should be an integer, got %q", p)
 	}
-	return f
+	if portInt <= 0 {
+		return fmt.Errorf("port should be positiv, got %q", p)
+	}
+	return nil
 }

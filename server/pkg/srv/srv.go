@@ -11,14 +11,13 @@ import (
 	"os/signal"
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/env"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
 
 // Run is the entry point for this module. It does some preparation and then
 // starts the server.
-func Run(logger deps.Logger, db deps.DB, getEnvFunc deps.GetEnvFunc) error {
+func Run(logger deps.Logger, env deps.Environment, db deps.Database) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -27,12 +26,7 @@ func Run(logger deps.Logger, db deps.DB, getEnvFunc deps.GetEnvFunc) error {
 		logger.Fatalf("Aborted.")
 	}()
 
-	e, err := env.Parse(getEnvFunc)
-	if err != nil {
-		return err
-	}
-
-	addr := fmt.Sprintf("%s:%d", e.Host, e.Port)
+	addr := fmt.Sprintf("%s:%s", env.Host(), env.Port())
 	if err := Start(ctx, logger, db, addr); err != nil {
 		return err
 	}
@@ -48,7 +42,7 @@ func Handler() http.Handler {
 
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
-func Start(ctx context.Context, logger deps.Logger, db deps.DB, addr string) error {
+func Start(ctx context.Context, logger deps.Logger, db deps.Database, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
 		Handler: Handler(),

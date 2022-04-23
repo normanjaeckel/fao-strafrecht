@@ -10,7 +10,7 @@ import (
 
 func TestEnv(t *testing.T) {
 	hostTestValue := "some_host"
-	portTestValue := 8080
+	portTestValue := "8080"
 	if err := os.Setenv("FAO_STRAFRECHT_HOST", hostTestValue); err != nil {
 		t.Fatalf("setting environment: %v", err)
 	}
@@ -25,7 +25,7 @@ func TestEnv(t *testing.T) {
 
 	t.Run("test FAO_STRAFRECHT_HOST", func(t *testing.T) {
 		expected := hostTestValue
-		got := e.Host
+		got := e.Host()
 		if got != expected {
 			t.Fatalf("retrieving env var: expected %q, got %q", expected, got)
 
@@ -34,9 +34,9 @@ func TestEnv(t *testing.T) {
 
 	t.Run("test FAO_STRAFRECHT_PORT", func(t *testing.T) {
 		expected := portTestValue
-		got := e.Port
+		got := e.Port()
 		if got != expected {
-			t.Fatalf("retrieving env var: expected %d, got %d", expected, got)
+			t.Fatalf("retrieving env var: expected %q, got %q", expected, got)
 
 		}
 	})
