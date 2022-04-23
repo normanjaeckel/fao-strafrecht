@@ -15,10 +15,10 @@ type Logger interface {
 // Database provides methods to save to and retrieve objects from persistent
 // datastore.
 type Database interface {
-	Insert(name string, data json.RawMessage) (int, error)
-	Update(name string, id int, data json.RawMessage) error
-	Retrieve(name string, id int) (json.RawMessage, error)
-	RetrieveAll(name string) (map[int]json.RawMessage, error)
+	InsertCase(fields json.RawMessage) (int, error)
+	UpdateCase(id int, fields json.RawMessage) error
+	RetrieveCase(id int) (json.RawMessage, error)
+	RetrieveCaseAll() (map[int]json.RawMessage, error)
 }
 
 // Environment provides the environment for this module.

@@ -10,7 +10,7 @@ import (
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
 )
 
-type SomeData struct {
+type SomeCaseFields struct {
 	Foo string
 	Bar string
 }
@@ -26,22 +26,21 @@ func TestDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loading db: %v", err)
 	}
-	name := "my collection"
-	firstData := SomeData{
+	firstData := SomeCaseFields{
 		Foo: "foo",
 		Bar: "bar",
 	}
 
 	t.Run("simple insert and retrieve", func(t *testing.T) {
-		id := insert(t, db, name, firstData)
+		id := insertCase(t, db, firstData)
 
 		expected := 1
 		if id != expected {
 			t.Fatalf("wrong id, expected %d, got %d", expected, id)
 		}
 
-		result := SomeData{}
-		retrieve(t, db, name, id, &result)
+		result := SomeCaseFields{}
+		retrieveCase(t, db, id, &result)
 
 		if firstData != result {
 			t.Fatalf("wrong retrieved data, expected %v, got %v", firstData, result)
@@ -49,11 +48,11 @@ func TestDB(t *testing.T) {
 	})
 
 	t.Run("second insert", func(t *testing.T) {
-		data := SomeData{
+		data := SomeCaseFields{
 			Foo: "foo2",
 		}
 
-		id := insert(t, db, name, data)
+		id := insertCase(t, db, data)
 
 		expected := 2
 		if id != expected {
@@ -62,15 +61,15 @@ func TestDB(t *testing.T) {
 	})
 
 	t.Run("update", func(t *testing.T) {
-		newData := SomeData{
+		newData := SomeCaseFields{
 			Foo: "foo3",
 		}
-		update(t, db, name, 1, newData)
+		updateCase(t, db, 1, newData)
 
-		result := SomeData{}
-		retrieve(t, db, name, 1, &result)
+		result := SomeCaseFields{}
+		retrieveCase(t, db, 1, &result)
 
-		expected := SomeData{
+		expected := SomeCaseFields{
 			Foo: newData.Foo,
 			Bar: "",
 		}
@@ -80,8 +79,8 @@ func TestDB(t *testing.T) {
 		}
 	})
 
-	t.Run("retriev all", func(t *testing.T) {
-		result, err := db.RetrieveAll(name)
+	t.Run("retrieve all", func(t *testing.T) {
+		result, err := db.RetrieveCaseAll()
 		if err != nil {
 			t.Fatalf("retrieving all data: %v", err)
 		}
@@ -100,8 +99,7 @@ func TestDBPersistence(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	name := "my collection"
-	data := SomeData{
+	data := SomeCaseFields{
 		Foo: "foo1\nfoo2",
 		Bar: "bar",
 	}
@@ -116,7 +114,7 @@ func TestDBPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loading db: %v", err)
 	}
-	insert(t, db1, name, data)
+	insertCase(t, db1, data)
 	f1.Close()
 
 	f2, err := os.OpenFile(p, os.O_APPEND|os.O_RDWR, 0644)
@@ -128,30 +126,30 @@ func TestDBPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loading db: %v", err)
 	}
-	result := SomeData{}
-	retrieve(t, db2, name, 1, &result)
+	result := SomeCaseFields{}
+	retrieveCase(t, db2, 1, &result)
 
 	if data != result {
 		t.Fatalf("wrong retrieved data, expected %v, got %v", data, result)
 	}
 }
 
-func insert(t testing.TB, db deps.Database, name string, data interface{}) int {
+func insertCase(t testing.TB, db deps.Database, data interface{}) int {
 	t.Helper()
 	encodedData, err := json.Marshal(data)
 	if err != nil {
 		t.Fatalf("marshalling json: %v", err)
 	}
-	id, err := db.Insert(name, encodedData)
+	id, err := db.InsertCase(encodedData)
 	if err != nil {
 		t.Fatalf("inserting data: %v", err)
 	}
 	return id
 }
 
-func retrieve(t testing.TB, db deps.Database, name string, id int, v interface{}) {
+func retrieveCase(t testing.TB, db deps.Database, id int, v interface{}) {
 	t.Helper()
-	result, err := db.Retrieve(name, id)
+	result, err := db.RetrieveCase(id)
 	if err != nil {
 		t.Fatalf("retrieving data: %v", err)
 	}
@@ -161,13 +159,13 @@ func retrieve(t testing.TB, db deps.Database, name string, id int, v interface{}
 	}
 }
 
-func update(t testing.TB, db deps.Database, name string, id int, data interface{}) {
+func updateCase(t testing.TB, db deps.Database, id int, data interface{}) {
 	t.Helper()
 	encodedData, err := json.Marshal(data)
 	if err != nil {
 		t.Fatalf("marshalling json: %v", err)
 	}
-	if err := db.Update(name, id, encodedData); err != nil {
+	if err := db.UpdateCase(id, encodedData); err != nil {
 		t.Fatalf("updating data: %v", err)
 	}
 }

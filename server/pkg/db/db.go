@@ -15,86 +15,100 @@ type jsonLineDB struct {
 	File *os.File
 }
 
-type entry struct {
-	Name string
-	ID   int
-	Data json.RawMessage
+type dbData struct {
+	Case map[int]json.RawMessage
 }
 
-type dbData map[string]map[int]json.RawMessage
+type line struct {
+	Name string
+	Blob json.RawMessage
+}
+
+type caseBlob struct {
+	ID     int
+	Fields json.RawMessage
+}
 
 // New returns a database instance. The given file is loaded.
 func New(f *os.File) (*jsonLineDB, error) {
-	data, err := load(f)
-	if err != nil {
-		return nil, fmt.Errorf("loading data from database file %q, %w", f.Name(), err)
+	data := dbData{
+		Case: map[int]json.RawMessage{},
 	}
-	return &jsonLineDB{
+	db := jsonLineDB{
 		Data: data,
 		File: f,
-	}, nil
+	}
+	if err := db.load(); err != nil {
+		return nil, fmt.Errorf("loading data from database file %q, %w", f.Name(), err)
+	}
+	return &db, nil
 }
 
-func load(f *os.File) (dbData, error) {
+func (db *jsonLineDB) load() error {
 	// See https://github.com/ostcar/timer/blob/main/model/model.go#L75
 
-	dbData := dbData{}
-
-	s := bufio.NewScanner(f)
+	s := bufio.NewScanner(db.File)
 	for s.Scan() {
-		e := entry{}
-		json.Unmarshal(s.Bytes(), &e)
+		l := line{}
+		json.Unmarshal(s.Bytes(), &l)
 
-		objs := dbData[e.Name]
-		if objs == nil {
-			dbData[e.Name] = map[int]json.RawMessage{}
+		switch l.Name {
+
+		case "Case":
+			blob := caseBlob{}
+			if err := json.Unmarshal(l.Blob, &blob); err != nil {
+				return fmt.Errorf("unmarshalling JSON case blob: %w", err)
+			}
+			db.Data.Case[blob.ID] = blob.Fields
+
+		default:
+			return fmt.Errorf("invalid line in database: %q", s.Text())
 		}
-
-		dbData[e.Name][e.ID] = e.Data
 	}
 	if err := s.Err(); err != nil {
-		return nil, fmt.Errorf("reading database file: %w", err)
+		return fmt.Errorf("reading database file: %w", err)
 	}
 
-	return dbData, nil
+	return nil
 }
 
-func (db *jsonLineDB) Insert(name string, data json.RawMessage) (int, error) {
-	nextID := db.maxID(name) + 1
+func (db *jsonLineDB) InsertCase(fields json.RawMessage) (int, error) {
+	nextID := db.maxCaseID() + 1
 
-	objs := db.Data[name]
-	if objs == nil {
-		db.Data[name] = map[int]json.RawMessage{}
+	blob := caseBlob{
+		ID:     nextID,
+		Fields: fields,
+	}
+	encodedBlob, err := json.Marshal(blob)
+	if err != nil {
+		return 0, fmt.Errorf("marshalling case blob for JSON line: %w", err)
 	}
 
-	db.Data[name][nextID] = data
-
-	e := entry{
-		Name: name,
-		ID:   nextID,
-		Data: data,
+	l := line{
+		Name: "Case",
+		Blob: encodedBlob,
 	}
-	line, err := json.Marshal(e)
+	encodedLine, err := json.Marshal(l)
 	if err != nil {
 		return 0, fmt.Errorf("marshalling JSON line: %w", err)
 	}
 
-	line = append(line, '\n')
-	if _, err := db.File.Write(line); err != nil {
+	encodedLine = append(encodedLine, '\n')
+	if _, err := db.File.Write(encodedLine); err != nil {
 		return 0, fmt.Errorf("writing to database file: %w", err)
 	}
+
+	db.Data.Case[nextID] = fields
 
 	return nextID, nil
 }
 
-func (db *jsonLineDB) maxID(name string) int {
-	objs := db.Data[name]
-
+func (db *jsonLineDB) maxCaseID() int {
 	var result int
-	for result = range objs {
+	for result = range db.Data.Case {
 		break
 	}
-	for n := range objs {
+	for n := range db.Data.Case {
 		if n > result {
 			result = n
 		}
@@ -102,32 +116,19 @@ func (db *jsonLineDB) maxID(name string) int {
 	return result
 }
 
-func (db *jsonLineDB) Retrieve(name string, id int) (json.RawMessage, error) {
-	objs := db.Data[name]
-	if objs == nil {
-		return json.RawMessage{}, errorNotFound(name, id)
-	}
-
-	data, ok := objs[id]
+func (db *jsonLineDB) RetrieveCase(id int) (json.RawMessage, error) {
+	fields, ok := db.Data.Case[id]
 	if !ok {
-		return json.RawMessage{}, errorNotFound(name, id)
+		return json.RawMessage{}, errorNotFound("Case", id)
 	}
-
-	return data, nil
+	return fields, nil
 }
 
-func (db *jsonLineDB) Update(name string, id int, data json.RawMessage) error {
-	objs := db.Data[name]
-	if objs == nil {
-		return errorNotFound(name, id)
+func (db *jsonLineDB) UpdateCase(id int, fields json.RawMessage) error {
+	if _, err := db.RetrieveCase(id); err != nil {
+		return fmt.Errorf("preparing update: %w", err)
 	}
-
-	_, ok := objs[id]
-	if !ok {
-		return errorNotFound(name, id)
-	}
-
-	db.Data[name][id] = data
+	db.Data.Case[id] = fields
 	return nil
 }
 
@@ -135,11 +136,6 @@ func errorNotFound(name string, id int) error {
 	return fmt.Errorf("object %s with id %d was not found", name, id)
 }
 
-func (db *jsonLineDB) RetrieveAll(name string) (map[int]json.RawMessage, error) {
-	objs := db.Data[name]
-	if objs == nil {
-		return map[int]json.RawMessage{}, nil
-	}
-
-	return objs, nil
+func (db *jsonLineDB) RetrieveCaseAll() (map[int]json.RawMessage, error) {
+	return db.Data.Case, nil
 }

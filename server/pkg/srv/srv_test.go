@@ -16,19 +16,19 @@ import (
 
 type FakeDB struct{}
 
-func (db *FakeDB) Insert(name string, data json.RawMessage) (int, error) {
+func (db *FakeDB) InsertCase(fields json.RawMessage) (int, error) {
 	return 0, fmt.Errorf("Not implemented")
 }
 
-func (db *FakeDB) Retrieve(name string, id int) (json.RawMessage, error) {
+func (db *FakeDB) RetrieveCase(id int) (json.RawMessage, error) {
 	return json.RawMessage{}, fmt.Errorf("Not implemented")
 }
 
-func (db *FakeDB) Update(name string, id int, data json.RawMessage) error {
+func (db *FakeDB) UpdateCase(id int, fields json.RawMessage) error {
 	return fmt.Errorf("Not implemented")
 }
 
-func (db *FakeDB) RetrieveAll(name string) (map[int]json.RawMessage, error) {
+func (db *FakeDB) RetrieveCaseAll() (map[int]json.RawMessage, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
