@@ -5,19 +5,38 @@ package srv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/deps"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
 
+type Logger interface {
+	Printf(format string, v ...any)
+}
+
+type LoggerWithFatal interface {
+	Logger
+	Fatalf(format string, v ...any)
+}
+
+type Environment interface {
+	Host() string
+	Port() string
+}
+
+type Eventstore interface {
+	Save(json.RawMessage) error
+	Retrieve(int) ([]json.RawMessage, error)
+}
+
 // Run is the entry point for this module. It does some preparation and then
 // starts the server.
-func Run(logger deps.Logger, env deps.Environment, db deps.Database) error {
+func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -27,7 +46,7 @@ func Run(logger deps.Logger, env deps.Environment, db deps.Database) error {
 	}()
 
 	addr := fmt.Sprintf("%s:%s", env.Host(), env.Port())
-	if err := Start(ctx, logger, db, addr); err != nil {
+	if err := Start(ctx, logger, addr); err != nil {
 		return err
 	}
 
@@ -42,7 +61,7 @@ func Handler() http.Handler {
 
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
-func Start(ctx context.Context, logger deps.Logger, db deps.Database, addr string) error {
+func Start(ctx context.Context, logger Logger, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
 		Handler: Handler(),
@@ -70,7 +89,7 @@ func Start(ctx context.Context, logger deps.Logger, db deps.Database, addr strin
 // incomming signal, it calls the cancel function and blocks again until SIGINT
 // comes in. Use it in a goroutine and call os.Exit() with non zero exit code to
 // abort the process.
-func onSignals(logger deps.Logger, cancel context.CancelFunc) {
+func onSignals(logger Logger, cancel context.CancelFunc) {
 	msg := "Received operating system signal: %s"
 
 	sigTerm := make(chan os.Signal, 1)

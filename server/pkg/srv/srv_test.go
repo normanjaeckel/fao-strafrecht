@@ -2,8 +2,6 @@ package srv_test
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -14,33 +12,14 @@ import (
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/srv"
 )
 
-type FakeDB struct{}
-
-func (db *FakeDB) InsertCase(fields json.RawMessage) (int, error) {
-	return 0, fmt.Errorf("Not implemented")
-}
-
-func (db *FakeDB) RetrieveCase(id int) (json.RawMessage, error) {
-	return json.RawMessage{}, fmt.Errorf("Not implemented")
-}
-
-func (db *FakeDB) UpdateCase(id int, fields json.RawMessage) error {
-	return fmt.Errorf("Not implemented")
-}
-
-func (db *FakeDB) RetrieveCaseAll() (map[int]json.RawMessage, error) {
-	return nil, fmt.Errorf("Not implemented")
-}
-
 func TestStart(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	ch := make(chan error, 1)
 
 	logger := log.Default()
-	db := FakeDB{}
 
 	go func() {
-		ch <- srv.Start(ctx, logger, &db, ":8080")
+		ch <- srv.Start(ctx, logger, ":8080")
 	}()
 	cancel()
 

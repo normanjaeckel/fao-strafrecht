@@ -4,7 +4,7 @@ These are:
 
   FAO_STRAFRECHT_HOST
   FAO_STRAFRECHT_PORT
-  FAO_STRAFRECHT_DBFILENAME
+  FAO_STRAFRECHT_DSFILENAME
 */
 package env
 
@@ -16,7 +16,7 @@ import (
 const (
 	DefaultHost        = ""
 	DefaultPort        = "8000"
-	DefaultDBFilenname = "db.jsonl"
+	DefaultDSFilenname = "ds.jsonl"
 )
 
 // Environment provides all environment variables that are used in this module.
@@ -32,8 +32,8 @@ func (e Environment) Port() string {
 	return e.vars["FAO_STRAFRECHT_PORT"]
 }
 
-func (e Environment) DBFilename() string {
-	return e.vars["FAO_STRAFRECHT_DBFILENAME"]
+func (e Environment) DSFilename() string {
+	return e.vars["FAO_STRAFRECHT_DSFILENAME"]
 }
 
 // Parse creates the Environment struct with all environment variables retrieved
@@ -43,7 +43,7 @@ func Parse(fn func(key string) string) (Environment, error) {
 		vars: map[string]string{
 			"FAO_STRAFRECHT_HOST":       DefaultHost,
 			"FAO_STRAFRECHT_PORT":       DefaultPort,
-			"FAO_STRAFRECHT_DBFILENAME": DefaultDBFilenname,
+			"FAO_STRAFRECHT_DSFILENAME": DefaultDSFilenname,
 		},
 	}
 
@@ -58,7 +58,7 @@ func Parse(fn func(key string) string) (Environment, error) {
 		return Environment{}, fmt.Errorf("invalid environment variable FAO_STRAFRECHT_PORT: %w", err)
 	}
 
-	// TODO: Validate FAO_STRAFRECHT_DBFILENAME: https://stackoverflow.com/questions/35231846/golang-check-if-string-is-valid-path
+	// TODO: Validate FAO_STRAFRECHT_DSFILENAME: https://stackoverflow.com/questions/35231846/golang-check-if-string-is-valid-path
 
 	return e, nil
 }

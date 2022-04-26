@@ -4,14 +4,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/db"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/env"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/eventstore"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/srv"
 )
 
 func main() {
-	// Provide dependencies. See pkg/deps for more information.
-
 	// Logger
 	logger := log.Default()
 
@@ -21,22 +19,15 @@ func main() {
 		logger.Fatalf("Error: parsing environment: %v", err)
 	}
 
-	// Database
-	f, err := os.OpenFile(
-		environment.DBFilename(),
-		os.O_APPEND|os.O_CREATE|os.O_RDWR,
-		0600,
-	)
+	// Datastore
+	es, close, err := eventstore.New(environment.DSFilename())
 	if err != nil {
-		logger.Fatalf("Error: opening database file: %v", err)
+		logger.Fatalf("Error: loading eventstore: %v", err)
 	}
-	database, err := db.New(f)
-	if err != nil {
-		logger.Fatalf("Error: loading database file: %v", err)
-	}
+	defer close()
 
 	// Start everything.
-	if err := srv.Run(logger, environment, database); err != nil {
+	if err := srv.Run(logger, environment, es); err != nil {
 		logger.Fatalf("Error: %v", err)
 	}
 }
