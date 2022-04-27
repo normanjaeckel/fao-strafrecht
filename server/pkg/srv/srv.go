@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
@@ -59,10 +58,10 @@ func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
 func Handler(es Eventstore) http.Handler {
 	mux := http.NewServeMux()
 
-	// Model case
-	p := "/" + APIPrefix + "/" + "case"
-	h := model.NewCaseHandler(es)
-	mux.Handle(p+"/", http.StripPrefix(p, h))
+	// // Model case
+	// p := "/" + APIPrefix + "/" + "case"
+	// h := model.NewCaseHandler(es)
+	// mux.Handle(p+"/", http.StripPrefix(p, h))
 
 	// Root
 	mux.Handle("/", public.Files())

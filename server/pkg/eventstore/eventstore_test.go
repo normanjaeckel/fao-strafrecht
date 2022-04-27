@@ -4,28 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"os"
-	"path"
 	"testing"
 	"time"
 
-	"github.com/normanjaeckel/fao-strafrecht/server/pkg/eventstore"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/testutils"
 )
 
-func TestDB(t *testing.T) {
-	dir, err := os.MkdirTemp("", "fao-strafrecht-")
-	if err != nil {
-		t.Fatalf("creating tmp directors: %v", err)
-	}
-
-	filename := path.Join(dir, "ds.jsonl")
-
-	es, close, err := eventstore.New(log.Default(), filename)
-	if err != nil {
-		t.Fatalf("loading eventstore at %q: %v", filename, err)
-	}
-	defer close()
+func TestEventstore(t *testing.T) {
+	es, filename, cleanup := testutils.CreateEventstore(t)
+	defer cleanup()
 
 	testData0 := json.RawMessage(`{"foo":"bar 0"}`)
 	testData1 := json.RawMessage(`{"foo":"bar 1"}`)
