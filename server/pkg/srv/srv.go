@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
@@ -34,6 +35,8 @@ type Eventstore interface {
 	Retrieve() ([]json.RawMessage, error)
 }
 
+const APIPrefix = "api"
+
 // Run is the entry point for this module. It does some preparation and then
 // starts the server.
 func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
@@ -46,25 +49,33 @@ func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
 	}()
 
 	addr := fmt.Sprintf("%s:%s", env.Host(), env.Port())
-	if err := Start(ctx, logger, addr); err != nil {
+	if err := Start(ctx, logger, es, addr); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func Handler() http.Handler {
+func Handler(es Eventstore) http.Handler {
 	mux := http.NewServeMux()
+
+	// Model case
+	p := "/" + APIPrefix + "/" + "case"
+	h := model.NewCaseHandler(es)
+	mux.Handle(p+"/", http.StripPrefix(p, h))
+
+	// Root
 	mux.Handle("/", public.Files())
+
 	return mux
 }
 
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
-func Start(ctx context.Context, logger Logger, addr string) error {
+func Start(ctx context.Context, logger Logger, es Eventstore, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
-		Handler: Handler(),
+		Handler: Handler(es),
 	}
 
 	go func() {

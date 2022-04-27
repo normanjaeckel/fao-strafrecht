@@ -2,6 +2,8 @@ package srv_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -12,14 +14,25 @@ import (
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/srv"
 )
 
+type FakeEventstore struct{}
+
+func (fes *FakeEventstore) Save(json.RawMessage) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (fes *FakeEventstore) Retrieve() ([]json.RawMessage, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func TestStart(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	ch := make(chan error, 1)
 
 	logger := log.Default()
+	es := FakeEventstore{}
 
 	go func() {
-		ch <- srv.Start(ctx, logger, ":8080")
+		ch <- srv.Start(ctx, logger, &es, ":8080")
 	}()
 	cancel()
 
@@ -31,7 +44,8 @@ func TestStart(t *testing.T) {
 }
 
 func TestClientHandler(t *testing.T) {
-	ts := httptest.NewServer(srv.Handler())
+	es := FakeEventstore{}
+	ts := httptest.NewServer(srv.Handler(&es))
 	defer ts.Close()
 
 	t.Run("test root path", func(t *testing.T) {
