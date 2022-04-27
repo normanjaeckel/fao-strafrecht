@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// Datastore
-	es, close, err := eventstore.New(environment.DSFilename())
+	es, close, err := eventstore.New(logger, environment.DSFilename())
 	if err != nil {
 		logger.Fatalf("Error: loading eventstore: %v", err)
 	}

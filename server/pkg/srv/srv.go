@@ -31,7 +31,7 @@ type Environment interface {
 
 type Eventstore interface {
 	Save(json.RawMessage) error
-	Retrieve(int) ([]json.RawMessage, error)
+	Retrieve() ([]json.RawMessage, error)
 }
 
 // Run is the entry point for this module. It does some preparation and then
