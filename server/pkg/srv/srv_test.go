@@ -2,8 +2,6 @@ package srv_test
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,28 +9,27 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/srv"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/testutils"
 )
 
-type FakeEventstore struct{}
-
-func (fes *FakeEventstore) Save(json.RawMessage) error {
-	return fmt.Errorf("not implemented")
-}
-
-func (fes *FakeEventstore) Retrieve() ([]json.RawMessage, error) {
-	return nil, fmt.Errorf("not implemented")
-}
-
 func TestStart(t *testing.T) {
+	logger := log.Default()
+
+	es, _, cleanup := testutils.CreateEventstore(t, logger)
+	defer cleanup()
+
+	model, err := model.New(es)
+	if err != nil {
+		t.Fatalf("loading model: %v", err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	ch := make(chan error, 1)
 
-	logger := log.Default()
-	es := FakeEventstore{}
-
 	go func() {
-		ch <- srv.Start(ctx, logger, &es, ":8080")
+		ch <- srv.Start(ctx, logger, model, ":8080")
 	}()
 	cancel()
 
@@ -44,8 +41,17 @@ func TestStart(t *testing.T) {
 }
 
 func TestClientHandler(t *testing.T) {
-	es := FakeEventstore{}
-	ts := httptest.NewServer(srv.Handler(&es))
+	logger := log.Default()
+
+	es, _, cleanup := testutils.CreateEventstore(t, logger)
+	defer cleanup()
+
+	model, err := model.New(es)
+	if err != nil {
+		t.Fatalf("loading model: %v", err)
+	}
+
+	ts := httptest.NewServer(srv.Handler(model))
 	defer ts.Close()
 
 	t.Run("test root path", func(t *testing.T) {
@@ -74,6 +80,10 @@ func TestClientHandler(t *testing.T) {
 		if !strings.HasPrefix(string(body), expected) {
 			t.Fatalf("wrong beginning of response body: expected %q, got (full data) %q", expected, string(body))
 		}
+	})
+
+	t.Run("test retrieve cases", func(t *testing.T) {
+		t.Fail()
 	})
 
 }

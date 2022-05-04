@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -12,7 +13,8 @@ import (
 )
 
 func TestEventstore(t *testing.T) {
-	es, filename, cleanup := testutils.CreateEventstore(t)
+	logger := log.Default()
+	es, filename, cleanup := testutils.CreateEventstore(t, logger)
 	defer cleanup()
 
 	testData0 := json.RawMessage(`{"foo":"bar 0"}`)

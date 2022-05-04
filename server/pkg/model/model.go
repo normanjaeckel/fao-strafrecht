@@ -6,6 +6,8 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model/lawcase"
 )
 
 type Eventstore interface {
@@ -14,25 +16,19 @@ type Eventstore interface {
 }
 
 type Model struct {
-	Eventstore Eventstore
-	Data       ModelData
+	eventstore Eventstore
+	Case       lawcase.Model
 }
 
-type ModelData struct {
-	Case  map[int]Case
-	Theme string
-}
-
-func initData() ModelData {
-	return ModelData{
-		Case: map[int]Case{},
-	}
+type decodedEvent struct {
+	Name string          `json:"Name"`
+	Data json.RawMessage `json:"Data"`
 }
 
 func New(es Eventstore) (*Model, error) {
 	m := Model{
-		Eventstore: es,
-		Data:       initData(),
+		eventstore: es,
+		Case:       lawcase.Model{},
 	}
 
 	events, err := es.Retrieve()
@@ -41,17 +37,16 @@ func New(es Eventstore) (*Model, error) {
 	}
 
 	for i, e := range events {
-		var decodedEvent struct {
-			Name string `json:"Name"`
-		}
-		if err := json.Unmarshal(e, &decodedEvent); err != nil {
+		var d decodedEvent
+		if err := json.Unmarshal(e, &d); err != nil {
 			return nil, fmt.Errorf("unmarshalling JSON (line %d): %w", i+1, err)
 		}
 
-		switch decodedEvent.Name {
+		switch d.Name {
 		case "Case":
-			id, c := jsonToCase(e)
-			m.Data.Case[id] = c
+			if err := m.Case.Load(d.Data); err != nil {
+				return nil, fmt.Errorf("loading case: %w", err)
+			}
 		case "Theme":
 			return nil, fmt.Errorf("not implemented")
 		default:
@@ -62,90 +57,27 @@ func New(es Eventstore) (*Model, error) {
 	return &m, nil
 }
 
-// Case
-
-type Case struct {
-	Rubrum string `json:"Rubrum"`
-	Az     string `json:"Az"`
-}
-
-func jsonToCase(msg json.RawMessage) (int, Case) {
-	var decodedMsg struct {
-		ID     int  `json:"ID"`
-		Fields Case `json:"Fields"`
+func (m *Model) WriteEvent(name string, data json.RawMessage) error {
+	d := decodedEvent{
+		Name: name,
+		Data: data,
 	}
-	if err := json.Unmarshal(msg, &decodedMsg); err != nil {
-		panic(fmt.Sprintf("unmarshalling JSON: %v; this should never ever happen", err))
-	}
-	return decodedMsg.ID, decodedMsg.Fields
-}
-
-func (m Model) RetrieveCase() map[int]Case {
-	return m.Data.Case
-}
-
-func (m *Model) AddCase(c Case) error {
-	newID := m.maxCaseID() + 1
-
-	event := struct {
-		Name   string
-		ID     int
-		Fields Case
-	}{
-		Name:   "Case",
-		ID:     newID,
-		Fields: c,
-	}
-	b, err := json.Marshal(event)
+	b, err := json.Marshal(d)
 	if err != nil {
 		return fmt.Errorf("marshalling JSON event: %w", err)
 	}
-	if err := m.Eventstore.Save(b); err != nil {
-		return fmt.Errorf("saving new case to eventstore: %w", err)
+	if err := m.eventstore.Save(b); err != nil {
+		return fmt.Errorf("saving new event to eventstore: %w", err)
 	}
-
-	m.Data.Case[newID] = c
 	return nil
-}
-
-func (m Model) maxCaseID() int {
-	var result int
-	for result = range m.Data.Case {
-		break
-	}
-	for n := range m.Data.Case {
-		if n > result {
-			result = n
-		}
-	}
-	return result
 }
 
 // Theme
 
-func (m Model) RetrieveTheme() string {
-	return m.Data.Theme
-}
-
-func (m *Model) SetTheme(t string) error {
-	return fmt.Errorf("not implemented")
-}
-
-// type CaseHandler struct {
+// func (m Model) RetrieveTheme() string {
+// 	return m.Theme
 // }
 
-// func NewCaseHandler() *CaseHandler {
-// 	return &CaseHandler{}
-// }
-
-// func (h CaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-// 	mux := http.NewServeMux()
-// 	mux.HandleFunc("/retrieve", RetrieveCases())
-// 	mux.ServeHTTP(w, r)
-// }
-
-// func RetrieveCases() func(http.ResponseWriter, *http.Request) {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		// TODO: Go ahead here.
-// 	}
+// func (m *Model) SetTheme(t string) error {
+// 	return fmt.Errorf("not implemented")
 // }

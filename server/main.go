@@ -6,6 +6,7 @@ import (
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/env"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/eventstore"
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/srv"
 )
 
@@ -19,15 +20,20 @@ func main() {
 		logger.Fatalf("Error: parsing environment: %v", err)
 	}
 
-	// Datastore
+	// Eventstore
 	es, close, err := eventstore.New(logger, environment.DSFilename())
 	if err != nil {
 		logger.Fatalf("Error: loading eventstore: %v", err)
 	}
 	defer close()
 
+	model, err := model.New(es)
+	if err != nil {
+		logger.Fatalf("Error: loading model: %v", err)
+	}
+
 	// Start everything.
-	if err := srv.Run(logger, environment, es); err != nil {
+	if err := srv.Run(logger, environment, model); err != nil {
 		logger.Fatalf("Error: %v", err)
 	}
 }

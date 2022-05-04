@@ -5,7 +5,6 @@ package testutils
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path"
 	"testing"
@@ -18,7 +17,7 @@ type Eventstore interface {
 	Retrieve() ([]json.RawMessage, error)
 }
 
-func CreateEventstore(t testing.TB) (Eventstore, string, func()) {
+func CreateEventstore(t testing.TB, logger eventstore.Logger) (Eventstore, string, func()) {
 	t.Helper()
 	dir, err := os.MkdirTemp("", "fao-strafrecht-")
 	if err != nil {
@@ -27,7 +26,7 @@ func CreateEventstore(t testing.TB) (Eventstore, string, func()) {
 
 	filename := path.Join(dir, "ds.jsonl")
 
-	es, close, err := eventstore.New(log.Default(), filename)
+	es, close, err := eventstore.New(logger, filename)
 	if err != nil {
 		t.Fatalf("loading eventstore at %q: %v", filename, err)
 	}

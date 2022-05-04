@@ -1,5 +1,6 @@
 # Patterns of intentionally untracked files that Git should ignore
 
 server
+ds.jsonl
 pkg/public/files
 .task/

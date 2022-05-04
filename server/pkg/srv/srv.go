@@ -5,12 +5,12 @@ package srv
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 
+	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/public"
 	"golang.org/x/sys/unix"
 )
@@ -29,16 +29,11 @@ type Environment interface {
 	Port() string
 }
 
-type Eventstore interface {
-	Save(json.RawMessage) error
-	Retrieve() ([]json.RawMessage, error)
-}
-
 const APIPrefix = "api"
 
 // Run is the entry point for this module. It does some preparation and then
 // starts the server.
-func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
+func Run(logger LoggerWithFatal, env Environment, m *model.Model) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -48,20 +43,20 @@ func Run(logger LoggerWithFatal, env Environment, es Eventstore) error {
 	}()
 
 	addr := fmt.Sprintf("%s:%s", env.Host(), env.Port())
-	if err := Start(ctx, logger, es, addr); err != nil {
+	if err := Start(ctx, logger, m, addr); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func Handler(es Eventstore) http.Handler {
+func Handler(m *model.Model) http.Handler {
 	mux := http.NewServeMux()
 
 	// // Model case
-	// p := "/" + APIPrefix + "/" + "case"
-	// h := model.NewCaseHandler(es)
-	// mux.Handle(p+"/", http.StripPrefix(p, h))
+	p := "/" + APIPrefix + "/" + "case"
+	h := NewCaseHandler(m)
+	mux.Handle(p+"/", http.StripPrefix(p, h))
 
 	// Root
 	mux.Handle("/", public.Files())
@@ -71,10 +66,10 @@ func Handler(es Eventstore) http.Handler {
 
 // Start starts the server. It blocks and returns an error if the server was not shut down
 // gracefully.
-func Start(ctx context.Context, logger Logger, es Eventstore, addr string) error {
+func Start(ctx context.Context, logger Logger, m *model.Model, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
-		Handler: Handler(es),
+		Handler: Handler(m),
 	}
 
 	go func() {
