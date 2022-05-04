@@ -33,3 +33,5 @@ func RetrieveCases(m *model.Model) func(http.ResponseWriter, *http.Request) {
 		}
 	}
 }
+
+// https://pkg.go.dev/github.com/go-playground/validator

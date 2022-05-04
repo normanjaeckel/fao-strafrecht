@@ -83,7 +83,27 @@ func TestClientHandler(t *testing.T) {
 	})
 
 	t.Run("test retrieve cases", func(t *testing.T) {
-		t.Fail()
-	})
+		path := "/api/case/retrieve"
 
+		res, err := http.Get(ts.URL + path)
+		if err != nil {
+			t.Fatalf("issuing GET request to %q: %v", path, err)
+		}
+		body, err := io.ReadAll(res.Body)
+		res.Body.Close()
+		if err != nil {
+			t.Fatalf("reading response body: %v", err)
+		}
+
+		expected := "{}"
+		if string(body) != expected {
+			t.Fatalf("wrong response body: expected %q, got %q", expected, string(body))
+		}
+
+		expectedCTHeader := "application/json"
+		gotCTHeader := res.Header.Get("Content-Type")
+		if expectedCTHeader != gotCTHeader {
+			t.Fatalf("wrong response Content-Type header: expected %q, got %q", expectedCTHeader, gotCTHeader)
+		}
+	})
 }
