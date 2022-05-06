@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model/lawcase"
@@ -63,20 +64,27 @@ func TestAddCase(t *testing.T) {
 	m := lawcase.Model{}
 
 	t.Run("add one case", func(t *testing.T) {
+		buf := bytes.NewBuffer(nil)
 		expectedRubrum := "rubrum yie5Athoh2"
 		c := lawcase.Case{
 			Rubrum: expectedRubrum,
 		}
 
-		msg, id := m.AddCase(c)
+		id, err := m.AddCase(c, buf)
 
+		if err != nil {
+			t.Fatalf("adding case: %v", err)
+		}
 		if id != 1 {
 			t.Fatalf("wrong id: expected 1, got %d", id)
 		}
-
+		content, err := io.ReadAll(buf)
+		if err != nil {
+			t.Fatalf("reading content from buffer given to AddCase: %v", err)
+		}
 		expectedMsg := []byte(fmt.Sprintf(`{"ID":1,"Fields":{"Rubrum":"%s","Az":""}}`, expectedRubrum))
-		if !bytes.Equal(msg, expectedMsg) {
-			t.Fatalf("wrong message, expected %q, got %q", expectedMsg, msg)
+		if !bytes.Equal(content, expectedMsg) {
+			t.Fatalf("wrong message, expected %q, got %q", expectedMsg, content)
 		}
 		res, err := m.Retrieve(1)
 		if err != nil {
@@ -88,29 +96,35 @@ func TestAddCase(t *testing.T) {
 	})
 
 	t.Run("add second case", func(t *testing.T) {
-		msg, id := m.AddCase(lawcase.Case{})
-		if msg == nil {
-			t.Fatalf("expected message, got nil")
-		}
+		buf := bytes.NewBuffer(nil)
+		id, err := m.AddCase(lawcase.Case{}, buf)
 
+		if err != nil {
+			t.Fatalf("adding case: %v", err)
+		}
 		if id != 2 {
 			t.Fatalf("wrong id: expected 2, got %d", id)
 		}
-
+		content, err := io.ReadAll(buf)
+		if err != nil {
+			t.Fatalf("reading content from buffer given to AddCase: %v", err)
+		}
+		expectedMsg := []byte(`{"ID":2,"Fields":{"Rubrum":"","Az":""}}`)
+		if !bytes.Equal(content, expectedMsg) {
+			t.Fatalf("wrong message, expected %q, got %q", expectedMsg, content)
+		}
 		if _, err := m.Retrieve(2); err != nil {
 			t.Fatalf("retrieving case: %v", err)
 		}
-
-		t.Run("retrieve not existing case", func(t *testing.T) {
-			id := 42
-			_, err := m.Retrieve(id)
-			expectedErrMsg := fmt.Sprintf("case %d does not exist", id)
-			if err == nil || err.Error() != expectedErrMsg {
-				t.Fatalf("expected error %q, got %v", expectedErrMsg, err)
-			}
-
-		})
-
 	})
 
+	t.Run("retrieve not existing case", func(t *testing.T) {
+		id := 42
+		_, err := m.Retrieve(id)
+		expectedErrMsg := fmt.Sprintf("case %d does not exist", id)
+		if err == nil || err.Error() != expectedErrMsg {
+			t.Fatalf("expected error %q, got %v", expectedErrMsg, err)
+		}
+
+	})
 }

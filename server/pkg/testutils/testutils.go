@@ -5,6 +5,7 @@ package testutils
 
 import (
 	"encoding/json"
+	"io"
 	"net/http/httptest"
 	"os"
 	"path"
@@ -16,7 +17,7 @@ import (
 )
 
 type Eventstore interface {
-	Save(json.RawMessage) error
+	io.Writer
 	Retrieve() ([]json.RawMessage, error)
 }
 
@@ -42,21 +43,21 @@ func CreateEventstore(t testing.TB, logger eventstore.Logger) (Eventstore, strin
 	return es, filename, cleanupFn
 }
 
-func CreateServer(t testing.TB, logger eventstore.Logger) (*httptest.Server, func()) {
+func CreateServer(t testing.TB, logger eventstore.Logger) (*httptest.Server, string, func()) {
 
-	es, _, esCleanup := CreateEventstore(t, logger)
+	es, filename, esCleanup := CreateEventstore(t, logger)
 
 	model, err := model.New(es)
 	if err != nil {
 		t.Fatalf("loading model: %v", err)
 	}
 
-	ts := httptest.NewServer(srv.Handler(model))
+	ts := httptest.NewServer(srv.Handler(logger, model))
 
 	cleanupFn := func() {
 		defer ts.Close()
 		defer esCleanup()
 	}
 
-	return ts, cleanupFn
+	return ts, filename, cleanupFn
 }

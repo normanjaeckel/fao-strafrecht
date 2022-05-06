@@ -22,7 +22,7 @@ func TestEventstore(t *testing.T) {
 
 	t.Run("test invalid event", func(t *testing.T) {
 		invalidEvent := json.RawMessage("invalid")
-		err := es.Save(invalidEvent)
+		_, err := es.Write(invalidEvent)
 		if err == nil {
 			t.Fatalf("expected error but got nil")
 		}
@@ -33,13 +33,13 @@ func TestEventstore(t *testing.T) {
 	})
 
 	t.Run("test first save", func(t *testing.T) {
-		if err := es.Save(testData0); err != nil {
+		if _, err := es.Write(testData0); err != nil {
 			t.Fatalf("saving test data %v", err)
 		}
 	})
 
 	t.Run("test second save", func(t *testing.T) {
-		if err := es.Save(testData1); err != nil {
+		if _, err := es.Write(testData1); err != nil {
 			t.Fatalf("saving test data %v", err)
 		}
 

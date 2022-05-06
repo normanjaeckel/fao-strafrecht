@@ -50,12 +50,12 @@ func Run(logger LoggerWithFatal, env Environment, m *model.Model) error {
 	return nil
 }
 
-func Handler(m *model.Model) http.Handler {
+func Handler(logger Logger, m *model.Model) http.Handler {
 	mux := http.NewServeMux()
 
 	// // Model case
 	p := "/" + APIPrefix + "/" + "case"
-	h := NewCaseHandler(m)
+	h := NewCaseHandler(logger, m)
 	mux.Handle(p+"/", http.StripPrefix(p, h))
 
 	// Root
@@ -69,7 +69,7 @@ func Handler(m *model.Model) http.Handler {
 func Start(ctx context.Context, logger Logger, m *model.Model, addr string) error {
 	s := &http.Server{
 		Addr:    addr,
-		Handler: Handler(m),
+		Handler: Handler(logger, m),
 	}
 
 	go func() {

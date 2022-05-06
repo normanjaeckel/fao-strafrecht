@@ -20,7 +20,9 @@ func TestModel(t *testing.T) {
 	id := 1
 	msg := fmt.Sprintf(`{"Name": "Case", "Data": {"ID": %d, "Fields": {"rubrum": "%s"}}}`, id, randStr)
 	firstCase := json.RawMessage([]byte(msg))
-	es.Save(firstCase)
+	if _, err := es.Write(firstCase); err != nil {
+		t.Fatalf("writing first case: %v", err)
+	}
 
 	t.Run("test insert and retrieve", func(t *testing.T) {
 
@@ -48,8 +50,7 @@ func TestModel(t *testing.T) {
 			Rubrum: randStr + randStr,
 		}
 
-		msg, _ := m.Case.AddCase(secondCase)
-		if err := m.WriteEvent("Case", msg); err != nil {
+		if _, err := m.Case.AddCase(secondCase, m.WriteEvent("Case")); err != nil {
 			t.Fatalf("adding case: %v", err)
 		}
 

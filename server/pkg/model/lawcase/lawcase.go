@@ -6,6 +6,7 @@ package lawcase
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 )
 
 type Model map[int]Case
@@ -35,8 +36,9 @@ func (cs *Model) Load(msg json.RawMessage) error {
 	return nil
 }
 
-func (cs *Model) AddCase(c Case) (json.RawMessage, int) {
-	// TODO: Maybe do some validation and the also return an error, then remove the panic line.
+func (cs *Model) AddCase(c Case, w io.Writer) (int, error) {
+	// TODO: Validate case: https://pkg.go.dev/github.com/go-playground/validator
+
 	newID := cs.maxCaseID() + 1
 	d := decodedMsg{
 		ID:     newID,
@@ -44,10 +46,13 @@ func (cs *Model) AddCase(c Case) (json.RawMessage, int) {
 	}
 	b, err := json.Marshal(d)
 	if err != nil {
-		panic(fmt.Sprintf("marshalling JSON event data: %v; this should never ever happen", err))
+		return 0, fmt.Errorf("marshalling JSON event data: %w", err)
+	}
+	if _, err := w.Write(b); err != nil {
+		return 0, fmt.Errorf("writing event data: %w", err)
 	}
 	(*cs)[newID] = c
-	return b, newID
+	return newID, nil
 }
 
 func (cs Model) maxCaseID() int {

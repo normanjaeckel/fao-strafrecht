@@ -6,12 +6,13 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model/lawcase"
 )
 
 type Eventstore interface {
-	Save(json.RawMessage) error
+	io.Writer
 	Retrieve() ([]json.RawMessage, error)
 }
 
@@ -57,19 +58,32 @@ func New(es Eventstore) (*Model, error) {
 	return &m, nil
 }
 
-func (m *Model) WriteEvent(name string, data json.RawMessage) error {
+func (m *Model) WriteEvent(name string) io.Writer {
+	return WriteEventer{
+		Name:        name,
+		InnerWriter: m.eventstore,
+	}
+}
+
+type WriteEventer struct {
+	Name        string
+	InnerWriter io.Writer
+}
+
+func (we WriteEventer) Write(data []byte) (int, error) {
 	d := decodedEvent{
-		Name: name,
+		Name: we.Name,
 		Data: data,
 	}
 	b, err := json.Marshal(d)
 	if err != nil {
-		return fmt.Errorf("marshalling JSON event: %w", err)
+		return 0, fmt.Errorf("marshalling JSON event: %w", err)
 	}
-	if err := m.eventstore.Save(b); err != nil {
-		return fmt.Errorf("saving new event to eventstore: %w", err)
+	n, err := we.InnerWriter.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("saving new event to eventstore: %w", err)
 	}
-	return nil
+	return n, nil
 }
 
 // Theme

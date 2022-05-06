@@ -48,10 +48,10 @@ func New(logger Logger, filename string) (*jsonLineDS, func() error, error) {
 	return &ds, f.Close, nil
 }
 
-// Save writes one event into the eventstore
-func (ds *jsonLineDS) Save(event json.RawMessage) error {
+// Write writes one event into the eventstore
+func (ds *jsonLineDS) Write(event []byte) (int, error) {
 	if !json.Valid(event) {
-		return fmt.Errorf("invalid JSON encoding for event %q", string(event))
+		return 0, fmt.Errorf("invalid JSON encoding for event %q", string(event))
 	}
 
 	l := line{
@@ -60,17 +60,18 @@ func (ds *jsonLineDS) Save(event json.RawMessage) error {
 	}
 	encodedLine, err := json.Marshal(l)
 	if err != nil {
-		return fmt.Errorf("marshalling JSON line: %w", err)
+		return 0, fmt.Errorf("marshalling JSON line: %w", err)
 	}
 	encodedLine = append(encodedLine, '\n')
 
-	if _, err := ds.File.Write(encodedLine); err != nil {
-		return fmt.Errorf("writing to database file: %w", err)
+	n, err := ds.File.Write(encodedLine)
+	if err != nil {
+		return 0, fmt.Errorf("writing to database file: %w", err)
 	}
 
 	ds.Logger.Printf("Wrote event to datastore file: %s", string(event))
 
-	return nil
+	return n, nil
 }
 
 // Retrieve retrieves all events from the eventstore.
