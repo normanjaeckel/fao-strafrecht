@@ -48,7 +48,8 @@ func TestModel(t *testing.T) {
 			Rubrum: randStr + randStr,
 		}
 
-		if err := m.WriteEvent("Case", m.Case.AddCase(secondCase)); err != nil {
+		msg, _ := m.Case.AddCase(secondCase)
+		if err := m.WriteEvent("Case", msg); err != nil {
 			t.Fatalf("adding case: %v", err)
 		}
 

@@ -68,7 +68,11 @@ func TestAddCase(t *testing.T) {
 			Rubrum: expectedRubrum,
 		}
 
-		msg := m.AddCase(c)
+		msg, id := m.AddCase(c)
+
+		if id != 1 {
+			t.Fatalf("wrong id: expected 1, got %d", id)
+		}
 
 		expectedMsg := []byte(fmt.Sprintf(`{"ID":1,"Fields":{"Rubrum":"%s","Az":""}}`, expectedRubrum))
 		if !bytes.Equal(msg, expectedMsg) {
@@ -84,9 +88,13 @@ func TestAddCase(t *testing.T) {
 	})
 
 	t.Run("add second case", func(t *testing.T) {
-		msg := m.AddCase(lawcase.Case{})
+		msg, id := m.AddCase(lawcase.Case{})
 		if msg == nil {
 			t.Fatalf("expected message, got nil")
+		}
+
+		if id != 2 {
+			t.Fatalf("wrong id: expected 2, got %d", id)
 		}
 
 		if _, err := m.Retrieve(2); err != nil {

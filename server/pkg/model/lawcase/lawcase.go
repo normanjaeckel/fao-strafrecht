@@ -35,7 +35,7 @@ func (cs *Model) Load(msg json.RawMessage) error {
 	return nil
 }
 
-func (cs *Model) AddCase(c Case) json.RawMessage {
+func (cs *Model) AddCase(c Case) (json.RawMessage, int) {
 	// TODO: Maybe do some validation and the also return an error, then remove the panic line.
 	newID := cs.maxCaseID() + 1
 	d := decodedMsg{
@@ -47,7 +47,7 @@ func (cs *Model) AddCase(c Case) json.RawMessage {
 		panic(fmt.Sprintf("marshalling JSON event data: %v; this should never ever happen", err))
 	}
 	(*cs)[newID] = c
-	return b
+	return b, newID
 }
 
 func (cs Model) maxCaseID() int {
