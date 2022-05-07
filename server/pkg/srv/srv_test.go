@@ -79,8 +79,23 @@ func TestRetrieveCaseHandler(t *testing.T) {
 	ts, _, cleanup := testutils.CreateServer(t, logger)
 	defer cleanup()
 
+	path := "/api/case/retrieve"
+
+	t.Run("invalid request method", func(t *testing.T) {
+		res, err := http.Post(ts.URL+path, "", nil)
+		if err != nil {
+			t.Fatalf("issuing POST request to %q: %v", path, err)
+		}
+
+		respBody := checkMethodNotAllowed(t, res)
+
+		expected := "Method not allowed\n"
+		if string(respBody) != expected {
+			t.Fatalf("wrong response body: expected %q, got %q", expected, string(respBody))
+		}
+	})
+
 	t.Run("test retrieve cases", func(t *testing.T) {
-		path := "/api/case/retrieve"
 
 		res, err := http.Get(ts.URL + path)
 		if err != nil {
