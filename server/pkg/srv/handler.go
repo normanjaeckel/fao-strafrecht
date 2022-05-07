@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model"
 	"github.com/normanjaeckel/fao-strafrecht/server/pkg/model/lawcase"
 )
@@ -49,12 +50,23 @@ func (h CaseHandler) RetrieveCases() func(http.ResponseWriter, *http.Request) {
 
 func (h CaseHandler) NewCase() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "POST")
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		d := json.NewDecoder(r.Body)
 		c := lawcase.Case{}
 		if err := d.Decode(&c); err != nil {
-			msg := fmt.Sprintf("Error: decoding request: %v", err)
-			h.Logger.Printf(msg)
-			http.Error(w, msg, 400)
+			http.Error(w, fmt.Sprintf("Error: decoding request: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		v := validator.New()
+		if err := v.Struct(c); err != nil {
+			http.Error(w, fmt.Sprintf("Error: invalid request:\n%v", err), http.StatusBadRequest)
 			return
 		}
 
@@ -62,7 +74,7 @@ func (h CaseHandler) NewCase() func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			msg := fmt.Sprintf("Error: adding case: %v", err)
 			h.Logger.Printf(msg)
-			http.Error(w, msg, 500)
+			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 
@@ -71,7 +83,7 @@ func (h CaseHandler) NewCase() func(http.ResponseWriter, *http.Request) {
 		if _, err := w.Write(respBody); err != nil {
 			msg := fmt.Sprintf("Error: writing response body: %v", err)
 			h.Logger.Printf(msg)
-			http.Error(w, msg, 500)
+			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 	}

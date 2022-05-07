@@ -82,7 +82,10 @@ func TestAddCase(t *testing.T) {
 		if err != nil {
 			t.Fatalf("reading content from buffer given to AddCase: %v", err)
 		}
-		expectedMsg := []byte(fmt.Sprintf(`{"ID":1,"Fields":{"Rubrum":"%s","Az":""}}`, expectedRubrum))
+		expectedMsg := []byte(fmt.Sprintf(
+			`{"ID":1,"Fields":{"Rubrum":"%s","Az":"","Gericht":"","Beginn":"","Ende":"","Gegenstand":"","Art":"","Beschreibung":"","Stand":""}}`,
+			expectedRubrum,
+		))
 		if !bytes.Equal(content, expectedMsg) {
 			t.Fatalf("wrong message, expected %q, got %q", expectedMsg, content)
 		}
@@ -109,7 +112,7 @@ func TestAddCase(t *testing.T) {
 		if err != nil {
 			t.Fatalf("reading content from buffer given to AddCase: %v", err)
 		}
-		expectedMsg := []byte(`{"ID":2,"Fields":{"Rubrum":"","Az":""}}`)
+		expectedMsg := []byte(`{"ID":2,"Fields":{"Rubrum":"","Az":"","Gericht":"","Beginn":"","Ende":"","Gegenstand":"","Art":"","Beschreibung":"","Stand":""}}`)
 		if !bytes.Equal(content, expectedMsg) {
 			t.Fatalf("wrong message, expected %q, got %q", expectedMsg, content)
 		}

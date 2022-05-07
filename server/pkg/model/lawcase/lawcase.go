@@ -12,8 +12,15 @@ import (
 type Model map[int]Case
 
 type Case struct {
-	Rubrum string `json:"Rubrum"`
-	Az     string `json:"Az"`
+	Rubrum       string `json:"Rubrum" validate:"required"`
+	Az           string `json:"Az"`
+	Gericht      string `json:"Gericht"`
+	Beginn       string `json:"Beginn" validate:"required"`
+	Ende         string `json:"Ende"`
+	Gegenstand   string `json:"Gegenstand"`
+	Art          string `json:"Art" validate:"oneof=Verteidiger Nebenkläger Zeugenbeistand Adhäsionskläger"`
+	Beschreibung string `json:"Beschreibung"`
+	Stand        string `json:"Stand" validate:"required"`
 }
 
 type decodedMsg struct {
@@ -37,8 +44,6 @@ func (cs *Model) Load(msg json.RawMessage) error {
 }
 
 func (cs *Model) AddCase(c Case, w io.Writer) (int, error) {
-	// TODO: Validate case: https://pkg.go.dev/github.com/go-playground/validator
-
 	newID := cs.maxCaseID() + 1
 	d := decodedMsg{
 		ID:     newID,
