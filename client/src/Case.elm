@@ -1,4 +1,8 @@
-module Case exposing (Art(..), Model, artToString, defaultArt, stringToArt)
+module Case exposing (Art(..), Model, artToString, caseDecoder, caseEncoder, defaultArt, stringToArt)
+
+import Json.Decode as JD
+import Json.Decode.Pipeline as JP
+import Json.Encode as JE
 
 
 type alias Model =
@@ -65,3 +69,38 @@ stringToArt s =
 
     else
         defaultArt
+
+
+caseDecoder : JD.Decoder Model
+caseDecoder =
+    JD.succeed Model
+        |> JP.required "Rubrum" JD.string
+        |> JP.required "Az" JD.string
+        |> JP.required "Gericht" JD.string
+        |> JP.required "Beginn" JD.string
+        |> JP.required "Ende" JD.string
+        |> JP.required "Gegenstand" JD.string
+        |> JP.required "Art" artDecoder
+        |> JP.required "Beschreibung" JD.string
+        |> JP.required "Stand" JD.string
+
+
+artDecoder : JD.Decoder Art
+artDecoder =
+    JD.string
+        |> JD.andThen (\s -> stringToArt s |> JD.succeed)
+
+
+caseEncoder : Model -> JE.Value
+caseEncoder m =
+    JE.object
+        [ ( "Rubrum", JE.string m.rubrum )
+        , ( "Az", JE.string m.az )
+        , ( "Gericht", JE.string m.gericht )
+        , ( "Beginn", JE.string m.beginn )
+        , ( "Ende", JE.string m.ende )
+        , ( "Gegenstand", JE.string m.gegenstand )
+        , ( "Art", JE.string <| artToString <| m.art )
+        , ( "Beschreibung", JE.string m.beschreibung )
+        , ( "Stand", JE.string m.stand )
+        ]

@@ -15,3 +15,7 @@ tasks:
   default:
     - task: client:default
     - task: server:default
+
+  dev:
+    - task: client:dev
+    - task: server:dev

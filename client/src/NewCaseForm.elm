@@ -2,8 +2,10 @@ module NewCaseForm exposing (Action(..), Model, Msg, init, update, view)
 
 import Case
 import Html exposing (..)
-import Html.Attributes exposing (attribute, class, classList, for, id, placeholder, rows, selected, type_, value)
+import Html.Attributes exposing (attribute, class, classList, disabled, for, id, placeholder, rows, selected, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Http
+import Json.Decode as JD
 import Shared exposing (classes)
 
 
@@ -16,11 +18,14 @@ import Shared exposing (classes)
     formData :      Contains data from all form fields.
     invalidFields : Holds booleans for all fields that have been filled with
                     invalid data (i. e. fields that must not be empty).
+    caseOnSaving : Holds the case that was sent to server while we are waiting
+                   for the response. The form is "locked" meanwhile.
 
 -}
 type alias Model =
     { formData : FormData
     , invalidFields : InvalidFields
+    , caseOnSaving : Maybe Case.Model
     }
 
 
@@ -53,6 +58,7 @@ init =
     Model
         defaultFormData
         defaultInvalidFields
+        Nothing
 
 
 defaultFormData : FormData
@@ -82,6 +88,7 @@ type Msg
     = FormDataMsg FormDataInput
     | Save
     | Cancel
+    | FromServer (Result Http.Error Int)
 
 
 type FormDataInput
@@ -100,8 +107,8 @@ type FormDataInput
 -}
 type Action
     = Canceled
-    | Saved Case.Model
-    | Updated Model
+    | Saved Int Case.Model
+    | Updated Model (Cmd Msg)
 
 
 {-| Processes the messages of this module and provides also an OutMsg for the
@@ -111,13 +118,29 @@ update : Msg -> Model -> Action
 update msg model =
     case msg of
         FormDataMsg m ->
-            Updated { model | formData = updateFormData m model.formData }
+            Updated { model | formData = updateFormData m model.formData } Cmd.none
 
         Save ->
             save model
 
         Cancel ->
             Canceled
+
+        FromServer res ->
+            case res of
+                Ok id ->
+                    case model.caseOnSaving of
+                        Just c ->
+                            Saved id c
+
+                        Nothing ->
+                            -- When the "form lock" is gone, just close the form.
+                            Canceled
+
+                Err _ ->
+                    -- Received error so do not save something and remove the "form lock".
+                    -- TODO: Show error message.
+                    Updated { model | caseOnSaving = Nothing } Cmd.none
 
 
 updateFormData : FormDataInput -> FormData -> FormData
@@ -152,7 +175,7 @@ updateFormData msg formData =
 
 
 {-| If the form is invalid, we just fill the invalidFields property. If the form
-is valid, we create the new Case and send it to the parent.
+is valid, we create the new Case and send it to the server.
 -}
 save : Model -> Action
 save model =
@@ -166,7 +189,7 @@ save model =
             formValidate f
     in
     if formIsInvalid v then
-        Updated { model | invalidFields = v }
+        Updated { model | invalidFields = v } Cmd.none
 
     else
         let
@@ -182,8 +205,16 @@ save model =
                     f.art
                     f.beschreibung
                     f.stand
+
+            cmd : Cmd Msg
+            cmd =
+                Http.post
+                    { url = "/api/case/new"
+                    , body = Http.jsonBody (Case.caseEncoder c)
+                    , expect = Http.expectJson FromServer (JD.field "id" JD.int)
+                    }
         in
-        Saved c
+        Updated { model | caseOnSaving = Just c } cmd
 
 
 formValidate : FormData -> InvalidFields
@@ -211,7 +242,7 @@ view model =
         [ form
             [ onSubmit Save, class "mb-5" ]
             [ formfields model.formData model.invalidFields |> map FormDataMsg
-            , formButtons Cancel
+            , formButtons model.caseOnSaving
             ]
         , hr [ classes "col-4 mb-5" ] []
         ]
@@ -232,13 +263,23 @@ formfields formData invalidFields =
         ]
 
 
-formButtons : msg -> Html msg
-formButtons cancelMsg =
+formButtons : Maybe Case.Model -> Html Msg
+formButtons caseOnSaving =
+    let
+        d : Bool
+        d =
+            case caseOnSaving of
+                Just _ ->
+                    True
+
+                Nothing ->
+                    False
+    in
     div []
-        [ button [ type_ "submit", classes "btn btn-primary" ]
+        [ button [ type_ "submit", classes "btn btn-primary", disabled d ]
             [ text "Speichern" ]
         , button
-            [ type_ "button", classes "btn btn-secondary mx-2", onClick cancelMsg ]
+            [ type_ "button", classes "btn btn-secondary mx-2", disabled d, onClick Cancel ]
             [ text "Abbrechen" ]
         ]
 

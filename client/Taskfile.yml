@@ -5,9 +5,20 @@ tasks:
   default:
     - task: build
 
+  dev:
+    - task: buildDev
+
   build:
     cmds:
       - elm make --output=assets/elm.js --optimize src/Main.elm
+    sources:
+      - src/**/*.elm
+    generates:
+      - assets/elm.js
+
+  buildDev:
+    cmds:
+      - elm make --output=assets/elm.js src/Main.elm
     sources:
       - src/**/*.elm
     generates:

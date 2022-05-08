@@ -6,16 +6,19 @@ import CaseTable
 import Html exposing (..)
 import Html.Attributes exposing (class, href, type_)
 import Html.Events exposing (onClick)
+import Http
+import Json.Decode as JD
 import NewCaseForm
 import Shared exposing (classes)
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
 
 
@@ -29,11 +32,16 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    Model
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Model
         Nothing
         CaseTable.init
+    , Http.get
+        { url = "/api/case/retrieve"
+        , expect = Http.expectJson RetrieveCases (JD.dict Case.caseDecoder) -- TODO: Add decoder for validation that the key is transformable to int
+        }
+    )
 
 
 
@@ -41,51 +49,74 @@ init =
 
 
 type Msg
-    = OpenNewCaseForm
+    = RetrieveCases RetrievedCases
+    | OpenNewCaseForm
     | NewCaseFormMsg NewCaseForm.Msg
     | CaseTableMsg CaseTable.Msg
 
 
-update : Msg -> Model -> Model
+type alias RetrievedCases =
+    Result Http.Error CaseTable.CasesFromServer
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        RetrieveCases result ->
+            ( { model | caseTable = loadInitialCaseTable result model.caseTable }, Cmd.none )
+
         OpenNewCaseForm ->
-            { model | newCaseForm = Just NewCaseForm.init }
+            ( { model | newCaseForm = Just NewCaseForm.init }, Cmd.none )
 
         NewCaseFormMsg innerMsg ->
             handleNewCaseFormMsg innerMsg model
 
         CaseTableMsg innerMsg ->
-            handleCaseTableMsg innerMsg model
+            ( { model | caseTable = CaseTable.update innerMsg model.caseTable }, Cmd.none )
 
 
-handleNewCaseFormMsg : NewCaseForm.Msg -> Model -> Model
+loadInitialCaseTable : RetrievedCases -> CaseTable.Model -> CaseTable.Model
+loadInitialCaseTable res m =
+    case res of
+        Ok cs ->
+            { m | cases = CaseTable.insertCases cs m.cases }
+
+        Err _ ->
+            -- TODO: Handle the error and show error message or try again
+            m
+
+
+handleNewCaseFormMsg : NewCaseForm.Msg -> Model -> ( Model, Cmd Msg )
 handleNewCaseFormMsg msg model =
     case model.newCaseForm of
         Nothing ->
             -- There is no form so ignore the form message.
-            model
+            ( model, Cmd.none )
 
         Just f ->
             case NewCaseForm.update msg f of
-                NewCaseForm.Updated m ->
-                    { model | newCaseForm = Just m }
+                NewCaseForm.Updated m cmd ->
+                    ( { model | newCaseForm = Just m }, cmd |> Cmd.map NewCaseFormMsg )
 
-                NewCaseForm.Saved c ->
-                    { model | newCaseForm = Nothing, caseTable = insertCaseToTable c model.caseTable }
+                NewCaseForm.Saved id c ->
+                    ( { model | newCaseForm = Nothing, caseTable = insertCaseToTable id c model.caseTable }, Cmd.none )
 
                 NewCaseForm.Canceled ->
-                    { model | newCaseForm = Nothing }
+                    ( { model | newCaseForm = Nothing }, Cmd.none )
 
 
-insertCaseToTable : Case.Model -> CaseTable.Model -> CaseTable.Model
-insertCaseToTable e m =
-    { m | cases = CaseTable.insertCase e m.cases }
+insertCaseToTable : Int -> Case.Model -> CaseTable.Model -> CaseTable.Model
+insertCaseToTable id e m =
+    { m | cases = CaseTable.insertCase id e m.cases }
 
 
-handleCaseTableMsg : CaseTable.Msg -> Model -> Model
-handleCaseTableMsg msg model =
-    { model | caseTable = CaseTable.update msg model.caseTable }
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
 
 
 

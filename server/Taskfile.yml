@@ -8,6 +8,9 @@ tasks:
     - task: staticcheck
     - task: build
 
+  dev:
+    - task: default
+
   copyClient:
     cmds:
       - rm -rf pkg/public/files

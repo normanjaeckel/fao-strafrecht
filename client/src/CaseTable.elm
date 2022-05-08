@@ -1,12 +1,13 @@
-module CaseTable exposing (Model, Msg, init, insertCase, update, view)
+module CaseTable exposing (CasesFromServer, Model, Msg, init, insertCase, insertCases, update, view)
 
 import Case
 import Dict
 import Html exposing (..)
-import Html.Attributes exposing (scope)
+import Html.Attributes exposing (colspan, scope)
 import Html.Events exposing (onClick)
 import List exposing (sortBy)
 import Shared exposing (classes)
+import UpdateCaseForm
 
 
 
@@ -16,37 +17,18 @@ import Shared exposing (classes)
 {-| Model controls the table with all cases.
 
     cases :   All cases (dictionary from id to case)
-    sortBy :  Marks the sorting column
-    sortDir : Sorting direction
+    sorting :  Marks the sorting column and sorting direction
 
 -}
 type alias Model =
     { cases : Cases
     , sorting : Sorting
+    , updateCaseForm : Maybe UpdateCaseForm.Model
     }
 
 
-type Cases
-    = Cases (Dict.Dict Int Case.Model) Expanded
-
-
-type Expanded
-    = Expanded (Maybe Int)
-
-
-getExp : Cases -> Maybe Int
-getExp (Cases _ (Expanded exp)) =
-    exp
-
-
-isExpanded : Cases -> Bool
-isExpanded c =
-    case getExp c of
-        Just _ ->
-            True
-
-        Nothing ->
-            False
+type alias Cases =
+    Dict.Dict Int Case.Model
 
 
 type alias Sorting =
@@ -73,26 +55,9 @@ type SortDir
 init : Model
 init =
     Model
-        someDefaultCases
+        Dict.empty
         (Sorting Id Asc)
-
-
-someDefaultCases : Cases
-someDefaultCases =
-    -- TODO: Remove this after the server can provide defaults
-    let
-        c1 =
-            Case.Model "Schulze wg. Diebstahl" "000123/2020" "" "26.04.2020" "" "" Case.Verteidiger "" "laufend"
-
-        c2 =
-            Case.Model "Maller M. wg Betrug u. a." "000245/2022" "" "10.10.2020" "" "" Case.Nebenklaeger "" "laufend"
-
-        c3 =
-            Case.Model "Meier wg. Steuerhinterziehung" "000333/2022" "" "11.10.2020" "" "" Case.Verteidiger "" "laufend"
-    in
-    Cases (Dict.singleton 1 c1) (Expanded Nothing)
-        |> insertCase c2
-        |> insertCase c3
+        Nothing
 
 
 
@@ -100,8 +65,9 @@ someDefaultCases =
 
 
 type Msg
-    = OpenCaseDetail (Maybe Int)
+    = OpenCaseDetail Int
     | SortCases SortBy
+    | UpdateCaseFormMsg UpdateCaseForm.Msg
 
 
 {-| Processes the messages of this module.
@@ -109,32 +75,47 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        OpenCaseDetail innerMsg ->
-            { model | cases = changedDetail model.cases innerMsg }
+        OpenCaseDetail id ->
+            { model | updateCaseForm = Just <| UpdateCaseForm.init id }
 
         SortCases innerMsg ->
-            if isExpanded model.cases then
-                model
+            case model.updateCaseForm of
+                Just _ ->
+                    model
 
-            else
-                { model | sorting = changeSorting model.sorting innerMsg }
-
-
-insertCase : Case.Model -> Cases -> Cases
-insertCase e (Cases c exp) =
-    let
-        newId : Int
-        newId =
-            case Dict.keys c |> List.maximum of
                 Nothing ->
-                    1
+                    { model | sorting = changeSorting model.sorting innerMsg }
 
-                Just max ->
-                    max + 1
+        UpdateCaseFormMsg innerMsg ->
+            case model.updateCaseForm of
+                Nothing ->
+                    model
+
+                Just ucfM ->
+                    { model | updateCaseForm = Just <| UpdateCaseForm.update innerMsg ucfM }
+
+
+insertCase : Int -> Case.Model -> Cases -> Cases
+insertCase id e c =
+    Dict.insert id e c
+
+
+type alias CasesFromServer =
+    Dict.Dict String Case.Model
+
+
+insertCases : CasesFromServer -> Cases -> Cases
+insertCases elements c =
+    let
+        foldFn : String -> Case.Model -> Dict.Dict Int Case.Model -> Dict.Dict Int Case.Model
+        foldFn =
+            \id case_ updatedCases ->
+                updatedCases
+                    |> Dict.insert
+                        (String.toInt id |> Maybe.withDefault 0)
+                        case_
     in
-    Cases
-        (Dict.insert newId e c)
-        exp
+    Dict.foldl foldFn c elements
 
 
 changeSorting : Sorting -> SortBy -> Sorting
@@ -151,35 +132,6 @@ changeSorting sorting innerMsg =
         { sorting | sortBy = innerMsg, sortDir = Asc }
 
 
-changedDetail : Cases -> Maybe Int -> Cases
-changedDetail (Cases c (Expanded exp)) id =
-    -- We have five cases. Test them.
-    -- N N -> N
-    -- N 42 -> 42
-    -- 10 N -> 10
-    -- 10 10 -> N
-    -- 10 42 -> 42
-    let
-        value =
-            case exp of
-                Nothing ->
-                    id
-
-                Just currentId ->
-                    case id of
-                        Nothing ->
-                            id
-
-                        Just i ->
-                            if currentId == i then
-                                Nothing
-
-                            else
-                                id
-    in
-    value |> Expanded |> Cases c
-
-
 
 -- VIEW
 
@@ -188,23 +140,27 @@ changedDetail (Cases c (Expanded exp)) id =
 -}
 view : Model -> Html Msg
 view model =
-    div []
-        [ table [ classes "table table-striped" ]
-            [ thead []
-                [ tr []
-                    [ caseListHeader "#" model Id
-                    , caseListHeader "Rubrum" model Rubrum
-                    , caseListHeader "Beginn" model Beginn
-                    , caseListHeader "Ende" model Ende
-                    , caseListHeader "Stand" model Stand
-                    , th [ scope "col" ]
-                        [ text "HV-Tage" ]
+    if not (Dict.isEmpty model.cases) then
+        div []
+            [ table [ classes "table table-striped" ]
+                [ thead []
+                    [ tr []
+                        [ caseListHeader "#" model Id
+                        , caseListHeader "Rubrum" model Rubrum
+                        , caseListHeader "Beginn" model Beginn
+                        , caseListHeader "Ende" model Ende
+                        , caseListHeader "Stand" model Stand
+                        , th [ scope "col" ]
+                            [ text "HV-Tage" ]
+                        ]
                     ]
+                , tbody []
+                    (sortCases model.cases model.sorting |> caseRows model.updateCaseForm)
                 ]
-            , tbody []
-                (sortCases model.cases model.sorting |> caseRows)
             ]
-        ]
+
+    else
+        div [] []
 
 
 
@@ -236,8 +192,8 @@ sortArrows s field =
     span [ classes "float-end pe-5 default-cursor" ] [ text arrows ]
 
 
-type SortedCases
-    = SortedCases (List ( Int, Case.Model )) Expanded
+type alias SortedCases =
+    List ( Int, Case.Model )
 
 
 sortCases : Cases -> Sorting -> SortedCases
@@ -260,42 +216,38 @@ sortCases cases s =
 
                 Stand ->
                     sortByStringField .stand
-
-        result : List ( Int, Case.Model )
-        result =
-            case s.sortDir of
-                Asc ->
-                    sort cases
-
-                Desc ->
-                    List.reverse (sort cases)
     in
-    SortedCases result <| Expanded <| getExp cases
+    case s.sortDir of
+        Asc ->
+            sort cases
+
+        Desc ->
+            List.reverse (sort cases)
 
 
 sortById : Cases -> List ( Int, Case.Model )
-sortById (Cases c _) =
+sortById c =
     c |> Dict.toList |> List.sortBy (\n -> Tuple.first n)
 
 
 sortByStringField : (Case.Model -> String) -> Cases -> List ( Int, Case.Model )
-sortByStringField fn (Cases cases _) =
+sortByStringField fn c =
     let
         sortFn : ( Int, Case.Model ) -> String
         sortFn =
             \elem ->
                 Tuple.second elem |> fn
     in
-    Dict.toList cases |> List.sortBy sortFn
+    Dict.toList c |> List.sortBy sortFn
 
 
-caseRows : SortedCases -> List (Html Msg)
-caseRows (SortedCases s exp) =
-    List.map (caseRow exp) <| s
+caseRows : Maybe UpdateCaseForm.Model -> SortedCases -> List (Html Msg)
+caseRows m s =
+    List.map (caseRow m) <| s
 
 
-caseRow : Expanded -> ( Int, Case.Model ) -> Html Msg
-caseRow (Expanded exp) t =
+caseRow : Maybe UpdateCaseForm.Model -> ( Int, Case.Model ) -> Html Msg
+caseRow m t =
     let
         id : Int
         id =
@@ -305,21 +257,21 @@ caseRow (Expanded exp) t =
         c =
             Tuple.second t
     in
-    case exp of
+    case m of
         Nothing ->
             caseLine id c
 
-        Just i ->
-            if i /= id then
+        Just ucfM ->
+            if ucfM.id /= id then
                 caseLine id c
 
             else
-                caseForm id c
+                caseForm ucfM
 
 
 caseLine : Int -> Case.Model -> Html Msg
 caseLine id c =
-    tr [ onClick <| OpenCaseDetail <| Just id ]
+    tr [ onClick <| OpenCaseDetail <| id ]
         [ th [ scope "row" ]
             [ text <| String.fromInt id ]
         , td []
@@ -335,7 +287,9 @@ caseLine id c =
         ]
 
 
-caseForm : Int -> Case.Model -> Html Msg
-caseForm _ _ =
-    div [ onClick <| OpenCaseDetail <| Nothing ]
-        [ text "Byebye" ]
+caseForm : UpdateCaseForm.Model -> Html Msg
+caseForm model =
+    tr []
+        [ td [ colspan 6 ]
+            [ UpdateCaseForm.view model |> map UpdateCaseFormMsg ]
+        ]
